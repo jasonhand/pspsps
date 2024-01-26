@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PsPsPs</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.png">
+</head>
+<body>
+    <div id="app">
+        <h1>PsPsPs</h1>
+
+        <form id="zipForm">
+            <label for="zipCode">Enter Zip Code:</label>
+            <input type="text" id="zipCode" name="zipCode" required>
+
+            <label for="animalType">Animal Type:</label>
+            <select id="animalType" name="animalType">
+                <option value="">Any</option>
+                <option value="dog">Dog</option>
+                <option value="cat">Cat</option>
+                <!-- Add other animal types as needed -->
+            </select>
+
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender">
+                <option value="">Any</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+
+            <label for="distance">Distance:</label>
+            <select id="distance" name="distance">
+                <option value="">Any</option>
+                <option value="10">< 10 miles</option>
+                <option value="25">< 25 miles</option>
+                <option value="50">< 50 miles</option>
+                <option value="100">< 100 miles</option>
+            </select>
+
+            <button type="submit">Search</button>
+        </form>
+
+        <div id="results"></div>
+
+        <!-- "Load More Pets" button inside the main app div -->
+        <button id="loadMore" style="display:none;">Load More Pets</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
