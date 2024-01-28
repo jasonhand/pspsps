@@ -3,6 +3,8 @@
 <head>
     <title>PsPsPs</title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.png">
+    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <div id="app">
@@ -17,6 +19,8 @@
                 <option value="">Any</option>
                 <option value="dog">Dog</option>
                 <option value="cat">Cat</option>
+                <option value="rabbit">Rabbit</option>
+                <option value="horse">Horse</option>
                 <!-- Add other animal types as needed -->
             </select>
 
@@ -34,16 +38,15 @@
                 <option value="25">< 25 miles</option>
                 <option value="50">< 50 miles</option>
                 <option value="100">< 100 miles</option>
+                <option value="200">< 200 miles</option>
             </select>
 
             <button type="submit">Search</button>
         </form>
 
         <div id="results"></div>
-
-        <!-- "Load More Pets" button inside the main app div -->
-        <button id="loadMore" style="display:none;">Load More Pets</button>
     </div>
     <script src="script.js"></script>
+    <button id="loadMore" style="display:none;">Load More Pets</button>
 </body>
 </html>

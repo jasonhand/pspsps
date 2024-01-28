@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadPets(currentPagination.next);
         }
     });
-}); // This closes the DOMContentLoaded event listener
+});
 
 async function loadPets(page = 1) {
     const zipCode = document.getElementById('zipCode').value;
@@ -41,14 +41,14 @@ async function fetchPets(zipCode, animalType, gender, distance, page) {
         }
 
         const data = await response.json();
-        currentPagination = data.pagination; // Store pagination data
+        currentPagination = data.pagination;
         updateLoadMoreButton();
 
         const petsWithPhotos = data.animals.filter(pet => pet.photos && pet.photos.length > 0);
         if (page === 1) {
-            displayResults(petsWithPhotos); // Replace results for the first page
+            displayResults(petsWithPhotos);
         } else {
-            appendResults(petsWithPhotos); // Append results for subsequent pages
+            appendResults(petsWithPhotos);
         }
     } catch (error) {
         console.error('Error fetching data: ', error);
@@ -66,14 +66,16 @@ function updateLoadMoreButton() {
 
 function appendResults(pets) {
     const results = document.getElementById('results');
-    // Append new results to existing results
     pets.forEach(pet => {
-        // ... existing code to create petElement ...
+        // This code should be similar to the one in displayResults
+        // Create petElement and append it to the results
+        // Example:
+        const petElement = document.createElement('div');
+        petElement.className = 'pet';
+        // ... rest of the code to populate petElement ...
         results.appendChild(petElement);
     });
 }
-
-// The displayResults function remains the same
 
 function displayResults(pets) {
     const results = document.getElementById('results');
@@ -82,32 +84,30 @@ function displayResults(pets) {
     pets.forEach(pet => {
         const petElement = document.createElement('div');
         petElement.className = 'pet';
-
-        // Image
-        const imageUrl = pet.photos.length > 0 ? pet.photos[0].medium : 'images/placeholder-image-url.png'; // Use a placeholder image if no image is available
-
-        // Extracting additional information
-        const location = pet.contact.address.city + ', ' + pet.contact.address.state; // Example: City, State
-        const distance = pet.distance ? pet.distance.toFixed(1) + ' miles' : 'N/A';
+        const petDetailUrl = `pet-details.html?petId=${pet.id}`;
+        const imageUrl = pet.photos.length > 0 ? pet.photos[0].medium : 'images/placeholder-image-url.png';
+        const location = pet.contact.address.city + ', ' + pet.contact.address.state;
+        const petDistance = pet.distance ? pet.distance.toFixed(1) + ' miles' : 'N/A';
         const organization = pet.organization_id || 'N/A';
         const breed = pet.breeds.primary || 'Unknown';
         const type = pet.type || 'Unknown';
         const size = pet.size || 'Unknown';
-        const gender = pet.gender || 'Unknown';
+        const petGender = pet.gender || 'Unknown';
         const age = pet.age || 'Unknown';
 
         petElement.innerHTML = `
-            <img src="${imageUrl}" alt="Image of ${pet.name}" style="width:200px; height:auto;">
+            <a href="${petDetailUrl}" target="_blank">
+                <img src="${imageUrl}" alt="Image of ${pet.name}" style="width:200px; height:auto;">
+            </a>
             <h2>${pet.name}</h2>
             <p><strong>Type:</strong> ${type}</p>
             <p><strong>Breed:</strong> ${breed}</p>
             <p><strong>Size:</strong> ${size}</p>
-            <p><strong>Gender:</strong> ${gender}</p>
+            <p><strong>Gender:</strong> ${petGender}</p>
             <p><strong>Location:</strong> ${location}</p>
-            <p><strong>Distance:</strong> ${distance}</p>
+            <p><strong>Distance:</strong> ${petDistance}</p>
             <p><strong>Organization:</strong> ${organization}</p>
             <p><strong>Age:</strong> ${age}</p>
-            <p>${pet.description || 'No description available'}</p>
         `;
         results.appendChild(petElement);
     });
