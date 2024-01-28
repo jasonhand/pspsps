@@ -100,14 +100,13 @@ function displayResults(pets) {
                 <img src="${imageUrl}" alt="Image of ${pet.name}" style="width:200px; height:auto;">
             </a>
             <h2>${pet.name}</h2>
-            <p><strong>Type:</strong> ${type}</p>
+            <h3>${age}</h3>
             <p><strong>Breed:</strong> ${breed}</p>
             <p><strong>Size:</strong> ${size}</p>
             <p><strong>Gender:</strong> ${petGender}</p>
             <p><strong>Location:</strong> ${location}</p>
             <p><strong>Distance:</strong> ${petDistance}</p>
             <p><strong>Organization:</strong> ${organization}</p>
-            <p><strong>Age:</strong> ${age}</p>
         `;
         results.appendChild(petElement);
     });
