@@ -15,16 +15,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function loadPets(page = 1) {
-    const zipCode = document.getElementById('zipCode').value;
+    const location = document.getElementById('location').value;
     const animalType = document.getElementById('animalType').value;
     const gender = document.getElementById('gender').value;
     const distance = document.getElementById('distance').value;
-    await fetchPets(zipCode, animalType, gender, distance, page);
+    await fetchPets(location, animalType, gender, distance, page);
 }
 
-async function fetchPets(zipCode, animalType, gender, distance, page) {
+async function fetchPets(location, animalType, gender, distance, page) {
     try {
-        let url = `http://localhost:3000/api/v2/animals?page=${page}&location=${encodeURIComponent(zipCode)}`;
+        let url = `http://localhost:3000/api/v2/animals?page=${page}&location=${encodeURIComponent(location)}`;
         if (animalType) {
             url += `&type=${encodeURIComponent(animalType)}`;
         }
@@ -36,11 +36,21 @@ async function fetchPets(zipCode, animalType, gender, distance, page) {
         }
 
         const response = await fetch(url);
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Log and handle HTTP errors from the server
+            console.error(`HTTP error from proxy server! Status: ${response.status}`);
+            displayError(`HTTP error from proxy server! Status: ${response.status}`);
+            return;
         }
 
         const data = await response.json();
+
+        if (!data.animals || data.animals.length === 0) {
+            displayNoResultsModal();
+            return;
+        }
+
         currentPagination = data.pagination;
         updateLoadMoreButton();
 
@@ -51,7 +61,20 @@ async function fetchPets(zipCode, animalType, gender, distance, page) {
             appendResults(petsWithPhotos);
         }
     } catch (error) {
-        console.error('Error fetching data: ', error);
+        // Log and handle network errors or issues with the fetch operation
+        console.error('Network error or issue with fetch operation: ', error);
+        displayError(`Network error or issue with fetch operation: ${error.message}`);
+    }
+}
+
+function displayError(message) {
+    // Display error message to the user
+    const errorModal = document.getElementById('errorModal');
+    if (errorModal) {
+        errorModal.querySelector('.modal-content p').textContent = message;
+        errorModal.style.display = 'block';
+    } else {
+        alert(message);
     }
 }
 

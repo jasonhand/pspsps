@@ -11,8 +11,8 @@
         <h1>PsPsPs</h1>
 
         <form id="zipForm">
-            <label for="zipCode">Enter Zip Code:</label>
-            <input type="text" id="zipCode" name="zipCode" required>
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
 
             <label for="animalType">Animal Type:</label>
             <select id="animalType" name="animalType">
@@ -31,6 +31,17 @@
                 <option value="female">Female</option>
             </select>
 
+            <label for="animalAge">Animal Age:</label>
+            <select id="animalAge" name="animalAge">
+                <option value="">Any</option>
+                <option value="baby">Baby</option>
+                <option value="young">Young</option>
+                <option value="adult">Adult</option>
+                <option value="senior">Senior</option>
+                <!-- Add other age options as needed -->
+            </select>
+
+
             <label for="distance">Distance:</label>
             <select id="distance" name="distance">
                 <option value="">Any</option>
@@ -43,6 +54,30 @@
 
             <button type="submit">Search</button>
         </form>
+
+
+<!-- ...inside your results container... -->
+
+<div id="results" class="grid-container"></div>
+
+<!-- ...rest of your HTML... -->
+
+
+        <!-- Error Modal-->
+<div id="errorModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>An error occurred while fetching data. Please <a href="#" onclick="location.reload();">refresh</a> the search.</p>
+    </div>
+</div>
+
+<div id="noResultsModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeNoResultsModal()">&times;</span>
+        <p>No results found. Please try a different search.</p>
+    </div>
+</div>
+
 
         <div id="results"></div>
     </div>
