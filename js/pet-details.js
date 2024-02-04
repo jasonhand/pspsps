@@ -22,13 +22,13 @@ async function fetchPetDetails(petId) {
 
 function displayPetDetails(pet) {
     const detailsElement = document.getElementById('petDetails');
-
     const orgLink = `organization-details.html?orgId=${pet.organization_id}`;
 
-    detailsElement.innerHTML = `
+    // Start with basic pet details and table
+    let petDetailsHTML = `
         <h1>${pet.name} (${pet.age}, ${pet.gender})</h1>
-        <img src="${pet.photos.length > 0 ? pet.photos[0].full : 'images/placeholder-image-url.png'}" alt="Image of ${pet.name}">
-        <p>${pet.description}</p>
+        <div id="petImages"></div> <!-- Container for pet images -->
+        <p>${pet.description} ... <a href="${pet.url}" target="_blank">Read More</a></p>
         <table>
             <tr><th>Organization Id</th><td><a href="${orgLink}" target="_blank">${pet.organization_id}</a></td></tr>
             <tr><th>Contact Email</th><td>${pet.contact.email}</td></tr>
@@ -50,8 +50,24 @@ function displayPetDetails(pet) {
             <tr><th>Good with Cats</th><td>${pet.environment.cats ? 'Yes' : 'No'}</td></tr>
             <tr><th>Published At</th><td>${new Date(pet.published_at).toLocaleString()}</td></tr>
         </table>
-
-        ${pet.videos.length > 0 ? `<h3>Video:</h3>${pet.videos[0].embed}` : ''}
     `;
-}
 
+    // Append videos if available
+    if (pet.videos.length > 0) {
+        petDetailsHTML += `<h3>Video:</h3>${pet.videos[0].embed}`;
+    }
+
+    // Set the innerHTML of the details element
+    detailsElement.innerHTML = petDetailsHTML;
+
+    // Now, handle the images
+    const petImagesDiv = document.getElementById('petImages');
+    pet.photos.forEach(photo => {
+        const img = document.createElement('img');
+        img.src = photo.full;
+        img.alt = `Image of ${pet.name}`;
+        img.style.width = '600px'; // Set desired width
+        img.style.height = 'auto'; // Maintain aspect ratio
+        petImagesDiv.appendChild(img);
+    });
+}

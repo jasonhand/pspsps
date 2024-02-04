@@ -1,43 +1,4 @@
-body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background-color: #DAF7DC; /* Light green background */
-    color: #2F4858; /* Dark text color for contrast */
-}
-
-#results {
-    margin-top: 20px;
-}
-
-.pet {
-    width: 300px;
-    height: 300px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #f9f9f9;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-    margin: 10px; /* Optional margin for spacing between cards */
-    /* ... other styles ... */
-    text-align: center; /* Center aligning the content */
-}
-
-.pet img {
-    width: 50%; /* Larger images */
-    height: auto;
-    margin: 0 auto; /* Center the image */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Drop shadow for images */
-    border-radius: 4px; /* Slight rounding of image corners */
-}
-
-.pet h2 {
-    color: #2F4858; /* Dark blue color for headings */
-}
-
-.pet p {
-    color: #2F4858; /* Consistent text color */
-}
-
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     background-color: #DAF7DC; /* Light green background */
@@ -45,140 +6,90 @@ body {
     padding: 20px;
 }
 
-#petDetails {
-    background-color: #86BBD8; /* Light blue background */
-    border: 1px solid #336699; /* Dark blue border */
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+/* Results Container */
+#results {
+    margin-top: 20px;
 }
 
-#mainImage, #details, #allPhotos {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #9EE493; /* Light green background */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+/* Dropdown Container */
+.dropdown-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px; /* Adjust gap between dropdowns */
 }
 
-#mainImage img, #allPhotos img {
+/* Dropdown Styling */
+.dropdown {
+    flex-basis: 100%; /* Full width on smaller screens */
+}
+
+/* Individual Dropdown Styles */
+.dropdown label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.dropdown select,
+.dropdown input[type="text"] {
     width: 100%;
-    height: auto;
-    margin-bottom: 10px; /* Space between images */
+    padding: 5px;
+    border: 1px solid #ccc;
     border-radius: 4px;
 }
 
-#details h2, #details p {
-    margin: 10px 0;
-    color: #2F4858; /* Dark blue color */
+/* Responsive Adjustments */
+@media (min-width: 600px) {
+    .dropdown {
+        flex-basis: calc(50% - 10px); /* Half width minus gap on medium screens */
+    }
+}
+
+@media (min-width: 1024px) {
+    .dropdown {
+        flex-basis: calc(33% - 10px); /* One-third width minus gap on larger screens */
+    }
 }
 
 
-img {
-    max-width: 100%;
-    height: auto;
-}
-
-/* Existing styles */
-
-/* Table Styles */
-table {
-    width: 100%; /* Full width of the container */
-    border-collapse: collapse; /* Collapses border to single line */
-    margin-top: 20px; /* Space above the table */
-    background-color: #DAF7DC; /* Light green background for the table */
-}
-
-th, td {
-    border: 1px solid #336699; /* Dark blue border for cells */
-    padding: 8px; /* Padding inside cells */
-    text-align: left; /* Align text to the left in cells */
-}
-
-th {
-    background-color: #86BBD8; /* Light blue background for headers */
-    color: #2F4858; /* Dark text color for contrast */
-}
-
-td {
-    color: #2F4858; /* Dark text color for table data */
-}
 
 
-/* Add this to your CSS file */
-.modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4); 
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust minmax values as needed */
-    grid-gap: 20px;
-    padding: 20px;
-    background-color: #336699;;
-}
-
+/* Pet Card Styles */
 .pet {
+    position: relative; /* This is important for absolute positioning of the child elements */
+    width: 225px; /* or any desired width */
+    height: 225px; /* or any desired height */
     border-radius: 10px;
     overflow: hidden;
     background: #f9f9f9;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Normal state shadow */
-    transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth transition for shadow and transform */
-    transform: perspective(1000px) rotateX(0deg) rotateY(0deg); /* Initial 3D transform */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 10px;
 }
 
 .pet:hover {
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.4); /* Darker and larger shadow on hover */
-    transform: perspective(1000px) rotateX(-3deg) rotateY(3deg); /* Slight 3D rotation on hover */
+    transform: perspective(1000px) rotateX(-5deg) rotateY(10deg); /* Slight 3D rotation on hover */
 }
-
 
 .pet img {
-    display: block;
-    width: 100%;
-    height: 100%; /* Set height to 100% of the container */
-    object-fit: cover; /* This will cover the area, but might crop the image */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Image will cover the full width */
+    height: 100%; /* Image will cover the full height */
+    object-fit: cover; /* This will make sure the image covers the pet div */
 }
 
-.pet-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.5); /* More transparent background */
-    text-align: center;
-    padding: 5px; /* Adjust padding as needed */
-    font-size: 0.8em; /* Smaller text */
+/* Pet Information Overlay */
+/*.pet-info {
+/*    position: absolute;
+/*    bottom: 0;
+/*    left: 0;
+/*    width: 100%;
+/*    background: rgba(255, 255, 255, 0.5); /* Semi-transparent background */
+/*    text-align: center;
+    padding: 5px;
+    font-size: 0.8em; */
 }
 
 .pet-info h3 {
@@ -191,51 +102,150 @@ td {
     font-size: 0.9em;
 }
 
-/* Responsive adjustments */
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px; /* Adjust based on your preference */
+}
+
+.close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 35px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#modalImages img {
+    width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+/* Grid Container for Pets */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 20px;
+    padding: 20px;
+    /* background-color: #336699;
+}
+
+/* Responsive Grid Layout */
 @media (max-width: 600px) {
     .grid-container {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
 }
 
-/* Responsive Table */
-@media (max-width: 768px) {
-    table {
-        width: 100%; /* Ensure table is responsive and fits small screens */
-    }
-
-    /* Other responsive styles */
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #DAF7DC;
 }
 
+th, td {
+    border: 1px solid #336699;
+    padding: 8px;
+    text-align: left;
+}
 
-/* Mobile and Tablet Styles (Screens smaller than 768px) */
+th {
+    background-color: #86BBD8;
+    color: #2F4858;
+}
+
+td {
+    color: #2F4858;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
+    /* Adjustments for smaller screens */
     .pet img {
-        width: 80%; /* Adjust image size for smaller screens */
+        width: 80%;
     }
 
-    /* Adjust padding and margins for smaller screens */
     .pet {
         padding: 10px;
         margin-bottom: 10px;
     }
 
-    /* Ensure form elements and buttons are easily clickable */
     #zipForm input, #zipForm select, #zipForm button {
         width: 100%;
         margin-top: 10px;
     }
 
     body {
-        padding: 10px; /* Reduced padding on smaller screens */
+        padding: 10px;
+    }
+
+    table {
+        width: 100%;
     }
 }
 
-/* Desktop Styles (Screens larger than 768px) */
 @media (min-width: 769px) {
+    /* Styles for larger screens */
     .pet img {
-        width: 50%; /* Larger images for wider screens */
+        width: 50%;
     }
-
-    /* Optionally, add styles specific to larger screens here */
 }
+
+
+/* Polaroid Picture Effect */
+.polaroid {
+    background: white;
+    display: inline-block;
+    padding: 10px 10px 25px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    margin: 10px;
+    transform: rotate(-4deg);
+    transition: transform 0.2s ease;
+  }
+  
+  .polaroid:hover {
+    transform: rotate(0deg);
+  }
+  
+  .polaroid img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+  }
+  
+  .polaroid-caption {
+    text-align: center;
+    color: #333;
+    font-size: 0.9em;
+    margin-top: 5px;
+  }

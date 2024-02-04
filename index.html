@@ -11,48 +11,59 @@
         <h1>PsPsPs</h1>
 
         <form id="zipForm">
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" required>
+            <div class="dropdown-container">
+                <div class="dropdown">    
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location" required>
+                </div>
 
-            <label for="animalType">Animal Type:</label>
-            <select id="animalType" name="animalType">
-                <option value="">Any</option>
-                <option value="dog">Dog</option>
-                <option value="cat">Cat</option>
-                <option value="rabbit">Rabbit</option>
-                <option value="horse">Horse</option>
+            <div class="dropdown">
+                <label for="animalType">Animal Type:</label>
+                <select id="animalType" name="animalType">
+                    <option value="">Any</option>
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                    <option value="rabbit">Rabbit</option>
+                    <option value="horse">Horse</option>
                 <!-- Add other animal types as needed -->
-            </select>
+                </select>
+            </div>
 
-            <label for="gender">Gender:</label>
-            <select id="gender" name="gender">
-                <option value="">Any</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-            </select>
+            <div class="dropdown">        
+                <label for="gender">Gender:</label>
+                <select id="gender" name="gender">
+                    <option value="">Any</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>  
 
-            <label for="animalAge">Animal Age:</label>
-            <select id="animalAge" name="animalAge">
-                <option value="">Any</option>
-                <option value="baby">Baby</option>
-                <option value="young">Young</option>
-                <option value="adult">Adult</option>
-                <option value="senior">Senior</option>
-                <!-- Add other age options as needed -->
-            </select>
+            <div class="dropdown">
+                <label for="age">Age:</label>
+                <select id="animalAge" name="animalAge">
+                    <option value="">Any</option>
+                    <option value="Baby">Baby</option>
+                    <option value="Young">Young</option>
+                    <option value="Adult">Adult</option>
+                    <option value="Senior">Senior</option>
+                </select>
+            </div>
 
 
-            <label for="distance">Distance:</label>
-            <select id="distance" name="distance">
-                <option value="">Any</option>
-                <option value="10">< 10 miles</option>
-                <option value="25">< 25 miles</option>
-                <option value="50">< 50 miles</option>
-                <option value="100">< 100 miles</option>
-                <option value="200">< 200 miles</option>
-            </select>
+            <div class="dropdown">
+                <label for="distance">Distance:</label>
+                <select id="distance" name="distance">
+                    <option value="">Any</option>
+                    <option value="10">< 10 miles</option>
+                    <option value="25">< 25 miles</option>
+                    <option value="50">< 50 miles</option>
+                    <option value="100">< 100 miles</option>
+                    <option value="200">< 200 miles</option>
+                </select>
+            </div>
 
             <button type="submit">Search</button>
+        </div>
         </form>
 
 
@@ -61,6 +72,14 @@
 <div id="results" class="grid-container"></div>
 
 <!-- ...rest of your HTML... -->
+
+<!-- Image Modal-->
+<div id="petImageModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="modalImages"></div>
+    </div>
+</div>
 
 
         <!-- Error Modal-->
