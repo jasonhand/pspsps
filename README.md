@@ -1,9 +1,9 @@
 # pspsps
 Application using the Petfinder API to browse cats and dogs (without the advertisements)
 
-![](images\PsPsPs.png)
+![](images/PsPsPs.png)
 
-![](images\PsPsPs2.png)
+![](images/PsPsPs2.png)
 
 ## How to Use
 
