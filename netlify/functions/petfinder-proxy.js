@@ -110,35 +110,48 @@ exports.handler = async (event) => {
     };
   }
 
-  console.log('Request received:', {
+  console.log('[FUNCTION] Request received:', JSON.stringify({
     path: event.path,
     httpMethod: event.httpMethod,
     queryStringParameters: event.queryStringParameters
-  });
+  }));
 
   try {
     // Get access token
+    console.log('[FUNCTION] Getting access token...');
     const token = await getAccessToken();
+    console.log('[FUNCTION] Access token received');
     
     // Extract path parameters
     const path = event.path.replace('/.netlify/functions/petfinder-proxy', '');
-    console.log('Path after replacement:', path);
+    console.log('[FUNCTION] Path after replacement:', path);
     
-    // Remove any duplicate /v2 prefix, as the frontend code is already adding it
-    const cleanPath = path.replace(/^\/v2/, '');
-    console.log('Path after cleaning:', cleanPath);
+    let petfinderUrl;
     
-    const petfinderUrl = `https://api.petfinder.com/v2${cleanPath}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters).toString() : ''}`;
-    console.log('Petfinder URL:', petfinderUrl);
+    // Handle the case where path is empty or just a slash
+    if (!path || path === '/') {
+      petfinderUrl = 'https://api.petfinder.com/v2/animals';
+      if (event.queryStringParameters) {
+        petfinderUrl += '?' + new URLSearchParams(event.queryStringParameters).toString();
+      }
+    } else {
+      petfinderUrl = `https://api.petfinder.com/v2${path}`;
+      if (event.queryStringParameters) {
+        petfinderUrl += '?' + new URLSearchParams(event.queryStringParameters).toString();
+      }
+    }
+    
+    console.log('[FUNCTION] Petfinder URL:', petfinderUrl);
     
     // Make request to Petfinder API
+    console.log('[FUNCTION] Making request to Petfinder API...');
     const response = await axios.get(petfinderUrl, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
     
-    console.log('Petfinder API response status:', response.status);
+    console.log('[FUNCTION] Petfinder API response status:', response.status);
     
     return {
       statusCode: 200,
@@ -149,16 +162,15 @@ exports.handler = async (event) => {
       body: JSON.stringify(response.data)
     };
   } catch (error) {
-    console.error('Error proxying to Petfinder:', error.message);
-    console.error('Error details:', {
+    console.error('[FUNCTION] Error proxying to Petfinder:', error.message);
+    console.error('[FUNCTION] Error details:', JSON.stringify({
       status: error.response?.status,
       data: error.response?.data,
       config: error.config ? {
         url: error.config.url,
-        method: error.config.method,
-        headers: error.config.headers
+        method: error.config.method
       } : null
-    });
+    }));
     
     const statusCode = error.response?.status || 500;
     const errorMessage = error.response?.data || { message: 'Internal Server Error' };
