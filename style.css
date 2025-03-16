@@ -1,8 +1,10 @@
 /* General Styles */
 :root {
-  --primary-color: #4e937a;
-  --secondary-color: #e4f1ea;
-  --accent-color: #ff8066;
+  --primary-color: #52B2CF;     /* Deeper teal */
+  --secondary-color: #D1CFE2;   /* Light lavender */
+  --accent-color: #D4AFB9;      /* Pinkish-mauve */
+  --tertiary-color: #9CADCE;    /* Periwinkle blue */
+  --quaternary-color: #7EC4CF;  /* Light teal */
   --text-color: #333;
   --light-text: #fff;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -17,11 +19,12 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--secondary-color);
+  background: linear-gradient(135deg, var(--secondary-color) 0%, var(--quaternary-color) 100%);
   color: var(--text-color);
   line-height: 1.6;
   padding: 0;
   margin: 0;
+  min-height: 100vh;
 }
 
 /* Header and Navigation */
@@ -79,7 +82,7 @@ nav a:hover {
 }
 
 nav a.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--tertiary-color);
 }
 
 nav i {
@@ -100,6 +103,7 @@ nav i {
   border-radius: 10px;
   box-shadow: var(--shadow);
   margin-bottom: 30px;
+  border-top: 4px solid var(--primary-color);
 }
 
 .form-title {
@@ -143,7 +147,7 @@ nav i {
 .dropdown input[type="text"]:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(78, 147, 122, 0.2);
+  box-shadow: 0 0 0 2px rgba(82, 178, 207, 0.2);
 }
 
 /* Button Styles */
@@ -160,7 +164,7 @@ button {
 }
 
 button:hover {
-  background-color: #3a7058;
+  background-color: #3A93AC; /* Darker version of primary */
   transform: translateY(-2px);
 }
 
@@ -341,6 +345,11 @@ button:hover {
   font-size: 1.1rem;
 }
 
+#errorModal .modal-content i,
+#noResultsModal .modal-content i {
+  color: var(--accent-color);
+}
+
 /* Loading Indicator */
 .loading {
   display: flex;
@@ -435,11 +444,12 @@ button:hover {
 }
 
 .pet-details-description {
-  background-color: var(--secondary-color);
+  background-color: var(--quaternary-color);
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 25px;
   line-height: 1.6;
+  color: var(--text-color);
 }
 
 .pet-details-attributes {
@@ -499,12 +509,29 @@ button:hover {
 }
 
 .pet-details-footer a:hover {
-  background-color: #3a7058;
+  background-color: #3A93AC; /* Darker version of primary */
   transform: translateY(-2px);
 }
 
 .pet-details-loading {
   height: 200px;
+}
+
+/* Attribute groups with varied colors */
+.pet-details-attributes .attribute-group:nth-child(1) {
+  border-top: 3px solid var(--primary-color);
+}
+
+.pet-details-attributes .attribute-group:nth-child(2) {
+  border-top: 3px solid var(--tertiary-color);
+}
+
+.pet-details-attributes .attribute-group:nth-child(3) {
+  border-top: 3px solid var(--quaternary-color);
+}
+
+.pet-details-attributes .attribute-group:nth-child(4) {
+  border-top: 3px solid var(--accent-color);
 }
 
 /* Responsive adjustments for pet details */
