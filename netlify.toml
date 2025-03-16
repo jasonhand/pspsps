@@ -3,6 +3,10 @@
   functions = "netlify/functions"
   command = "./build.sh"
 
+[build.environment]
+  NETLIFY_SKIP_GO_INSTALL = "true"
+  NODE_VERSION = "18"
+
 [dev]
   functions = "netlify/functions"
   port = 8888

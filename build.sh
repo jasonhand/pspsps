@@ -3,6 +3,9 @@
 # This script is used by Netlify to install dependencies for functions
 set -e # Exit immediately if a command exits with a non-zero status
 
+# Skip Go installation - our project doesn't use Go
+export NETLIFY_SKIP_GO_INSTALL=true
+
 echo "Installing project dependencies..."
 npm install
 
