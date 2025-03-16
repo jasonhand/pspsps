@@ -1,104 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>PsPsPs</title>
+    <title>PsPsPs - Find Your Perfect Pet</title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.png">
-    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="app">
-        <h1>PsPsPs</h1>
+    <!-- Header with Navigation -->
+    <header>
+        <div class="logo">
+            <img src="images/PsPsPs_thumb.png" alt="PsPsPs Logo">
+            <h1>PsPsPs</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active"><i class="fas fa-search"></i> Find Pets</a></li>
+                <li><a href="#"><i class="fas fa-heart"></i> About</a></li>
+            </ul>
+        </nav>
+    </header>
 
+    <div id="app">
+        <!-- Search Form -->
         <form id="zipForm">
+            <h2 class="form-title">Find Your Perfect Pet Companion</h2>
             <div class="dropdown-container">
                 <div class="dropdown">    
-                    <label for="location">Location:</label>
-                    <input type="text" id="location" name="location" required>
+                    <label for="location"><i class="fas fa-map-marker-alt"></i> Location:</label>
+                    <input type="text" id="location" name="location" placeholder="Enter zip code or city" required>
                 </div>
 
-            <div class="dropdown">
-                <label for="animalType">Animal Type:</label>
-                <select id="animalType" name="animalType">
-                    <option value="">Any</option>
-                    <option value="dog">Dog</option>
-                    <option value="cat">Cat</option>
-                <!-- Add other animal types as needed -->
-                </select>
+                <div class="dropdown">
+                    <label for="animalType"><i class="fas fa-paw"></i> Animal Type:</label>
+                    <select id="animalType" name="animalType">
+                        <option value="">Any</option>
+                        <option value="dog">Dog</option>
+                        <option value="cat">Cat</option>
+                        <option value="rabbit">Rabbit</option>
+                        <option value="bird">Bird</option>
+                        <option value="horse">Horse</option>
+                        <option value="barnyard">Barnyard</option>
+                        <option value="small-furry">Small & Furry</option>
+                        <option value="scales-fins-other">Scales, Fins & Others</option>
+                    </select>
+                </div>
+
+                <div class="dropdown">        
+                    <label for="gender"><i class="fas fa-venus-mars"></i> Gender:</label>
+                    <select id="gender" name="gender">
+                        <option value="">Any</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>  
+
+                <div class="dropdown">
+                    <label for="animalAge"><i class="fas fa-birthday-cake"></i> Age:</label>
+                    <select id="animalAge" name="animalAge">
+                        <option value="">Any</option>
+                        <option value="Baby">Baby</option>
+                        <option value="Young">Young</option>
+                        <option value="Adult">Adult</option>
+                        <option value="Senior">Senior</option>
+                    </select>
+                </div>
+
+                <div class="dropdown">
+                    <label for="distance"><i class="fas fa-road"></i> Distance:</label>
+                    <select id="distance" name="distance">
+                        <option value="">Any</option>
+                        <option value="10">< 10 miles</option>
+                        <option value="25">< 25 miles</option>
+                        <option value="50">< 50 miles</option>
+                        <option value="100">< 100 miles</option>
+                        <option value="200">< 200 miles</option>
+                    </select>
+                </div>
             </div>
-
-            <div class="dropdown">        
-                <label for="gender">Gender:</label>
-                <select id="gender" name="gender">
-                    <option value="">Any</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                </select>
-            </div>  
-
-            <div class="dropdown">
-                <label for="age">Age:</label>
-                <select id="animalAge" name="animalAge">
-                    <option value="">Any</option>
-                    <option value="Baby">Baby</option>
-                    <option value="Young">Young</option>
-                    <option value="Adult">Adult</option>
-                    <option value="Senior">Senior</option>
-                </select>
-            </div>
-
-
-            <div class="dropdown">
-                <label for="distance">Distance:</label>
-                <select id="distance" name="distance">
-                    <option value="">Any</option>
-                    <option value="10">< 10 miles</option>
-                    <option value="25">< 25 miles</option>
-                    <option value="50">< 50 miles</option>
-                    <option value="100">< 100 miles</option>
-                    <option value="200">< 200 miles</option>
-                </select>
-            </div>
-
-            <button type="submit">Search</button>
-        </div>
+            <button type="submit"><i class="fas fa-search"></i> Search Pets</button>
         </form>
 
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading" style="display:none;"></div>
 
-<!-- ...inside your results container... -->
+        <!-- Pet Results Grid -->
+        <div id="results" class="grid-container"></div>
+        
+        <!-- Load More Button -->
+        <button id="loadMore" style="display:none;"><i class="fas fa-plus-circle"></i> Load More Pets</button>
+        
+        <!-- Pet Images Modal -->
+        <div id="petImageModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modalImages"></div>
+            </div>
+        </div>
 
-<div id="results" class="grid-container"></div>
+        <!-- Error Modal -->
+        <div id="errorModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff8066;"></i>
+                <p>An error occurred while fetching data. Please <a href="#" onclick="location.reload();">refresh</a> the search.</p>
+            </div>
+        </div>
 
-<!-- ...rest of your HTML... -->
-
-<!-- Image Modal-->
-<div id="petImageModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div id="modalImages"></div>
+        <!-- No Results Modal -->
+        <div id="noResultsModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeNoResultsModal()">&times;</span>
+                <i class="fas fa-search" style="font-size: 3rem; color: #4e937a;"></i>
+                <p>No results found. Please try a different search.</p>
+            </div>
+        </div>
     </div>
-</div>
-
-
-        <!-- Error Modal-->
-<div id="errorModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>An error occurred while fetching data. Please <a href="#" onclick="location.reload();">refresh</a> the search.</p>
-    </div>
-</div>
-
-<div id="noResultsModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close" onclick="closeNoResultsModal()">&times;</span>
-        <p>No results found. Please try a different search.</p>
-    </div>
-</div>
-
-
-        <div id="results"></div>
-    </div>
+    
     <script src="js/petsearch.js"></script>
-    <button id="loadMore" style="display:none;">Load More Pets</button>
 </body>
 </html>
