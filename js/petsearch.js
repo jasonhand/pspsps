@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     let currentPagination = null;
+    // Add favorites array to store favorited pet IDs
+    window.favorites = [];
 
     document.getElementById('zipForm').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make functions available globally for inline onclick handlers
     window.showOrganizationDetails = showOrganizationDetails;
     window.closeNoResultsModal = closeNoResultsModal;
+    window.toggleFavorite = toggleFavorite;
 });
 
 async function loadPets(page = 1) {
@@ -90,6 +93,9 @@ async function fetchPets(location, animalType, gender, distance, animalAge, page
 }
 
 function populatePetElement(petElement, pet) {
+    // Add pet ID as data attribute for favorite tracking
+    petElement.setAttribute('data-pet-id', pet.id);
+    
     // Create image element
     const imgElement = document.createElement('img');
     
@@ -112,11 +118,19 @@ function populatePetElement(petElement, pet) {
     imgElement.alt = pet.name;
     petElement.appendChild(imgElement);
     
-    // Add pet badge for status
-    const badgeElement = document.createElement('div');
-    badgeElement.className = 'pet-badge';
-    badgeElement.textContent = pet.status.charAt(0).toUpperCase() + pet.status.slice(1);
-    petElement.appendChild(badgeElement);
+    // Add heart favorite icon instead of status badge
+    const heartElement = document.createElement('div');
+    heartElement.className = 'pet-favorite';
+    const isFavorite = window.favorites.includes(pet.id);
+    heartElement.innerHTML = `<i class="fas fa-heart ${isFavorite ? 'active' : ''}"></i>`;
+    
+    // Add click handler to toggle favorite status
+    heartElement.addEventListener('click', function(event) {
+        event.stopPropagation(); // Prevent opening the pet details modal
+        toggleFavorite(pet.id, this);
+    });
+    
+    petElement.appendChild(heartElement);
 
     // Create pet info container
     const infoElement = document.createElement('div');
@@ -333,10 +347,18 @@ function showOrganizationDetails(orgId) {
 function displayPetDetails(pet) {
     const container = document.getElementById('petDetailsContainer');
     
+    // Check if pet is favorited
+    const isFavorite = window.favorites.includes(pet.id);
+    
     // Build HTML for pet details
     let html = `
         <div class="pet-details-header">
-            <h2 class="pet-details-name">${pet.name}</h2>
+            <h2 class="pet-details-name">
+                ${pet.name}
+                <span class="pet-details-favorite" onclick="toggleFavorite('${pet.id}')">
+                    <i class="fas fa-heart ${isFavorite ? 'active' : ''}"></i>
+                </span>
+            </h2>
             <p class="pet-details-subtitle">${pet.age} · ${pet.gender} · ${pet.breeds.primary}${pet.breeds.secondary ? ` / ${pet.breeds.secondary}` : ''}</p>
         </div>
         
@@ -486,4 +508,52 @@ function displayPetDetails(pet) {
     
     // Update the container with the pet details
     container.innerHTML = html;
+}
+
+// Function to toggle pet as favorite
+function toggleFavorite(petId, heartElement) {
+    const index = window.favorites.indexOf(petId);
+    
+    if (index === -1) {
+        // Add to favorites
+        window.favorites.push(petId);
+    } else {
+        // Remove from favorites
+        window.favorites.splice(index, 1);
+    }
+    
+    // If heartElement is provided (from pet card), update the icon
+    if (heartElement) {
+        const heartIcon = heartElement.querySelector('i');
+        if (index === -1) {
+            heartIcon.classList.add('active');
+        } else {
+            heartIcon.classList.remove('active');
+        }
+    }
+    
+    // Update all instances of this pet's heart in the grid
+    updateFavoriteStatusInGrid(petId, index === -1);
+    
+    // Log current favorites (could be used for other features later)
+    console.log('Current favorites:', window.favorites);
+}
+
+// Update all instances of a pet's favorite status in the results grid
+function updateFavoriteStatusInGrid(petId, isFavorite) {
+    // Find all pet cards in the grid
+    const petCards = document.querySelectorAll('.pet');
+    petCards.forEach(card => {
+        // Check if this card is for the pet we're updating
+        if (card.getAttribute('data-pet-id') === petId) {
+            const heartIcon = card.querySelector('.pet-favorite i');
+            if (heartIcon) {
+                if (isFavorite) {
+                    heartIcon.classList.add('active');
+                } else {
+                    heartIcon.classList.remove('active');
+                }
+            }
+        }
+    });
 }
