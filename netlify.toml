@@ -1,0 +1,20 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[dev]
+  functions = "netlify/functions"
+  port = 8888
+  
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/petfinder-proxy/:splat"
+  status = 200
+  force = true
+
+# Add an explicit redirect for the case where /api/v2/* is used
+[[redirects]]
+  from = "/api/v2/*"
+  to = "/.netlify/functions/petfinder-proxy/:splat"
+  status = 200
+  force = true
