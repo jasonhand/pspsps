@@ -99,6 +99,16 @@
                     <input type="checkbox" id="withPhotosOnly" name="withPhotosOnly" checked>
                     <label for="withPhotosOnly"><i class="fas fa-image"></i> Show animals with photos only</label>
                 </div>
+
+                <div class="favorites-actions">
+                    <button type="button" id="exportFavorites" class="action-button">
+                        <i class="fas fa-download"></i> Save Favorites
+                    </button>
+                    <label for="importFavorites" class="action-button import-label">
+                        <i class="fas fa-upload"></i> Import Favorites
+                    </label>
+                    <input type="file" id="importFavorites" accept=".json" style="display: none;">
+                </div>
             </div>
             
             <p class="search-hint">Enter a location and adjust filters to see results</p>

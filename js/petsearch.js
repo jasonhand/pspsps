@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event handlers for the organization details modal
     setupOrganizationDetailsModal();
     
+    // Set up event handlers for favorites import/export
+    setupFavoritesImportExport();
+    
     // Make functions available globally for inline onclick handlers
     window.showOrganizationDetails = showOrganizationDetails;
     window.closeNoResultsModal = closeNoResultsModal;
@@ -1012,4 +1015,193 @@ function displayOrganizationDetails(org) {
     
     // Update the container with the organization details
     container.innerHTML = html;
+}
+
+// Set up favorites import/export functionality
+function setupFavoritesImportExport() {
+    // Export favorites button
+    const exportBtn = document.getElementById('exportFavorites');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportFavorites);
+    }
+    
+    // Import favorites input
+    const importInput = document.getElementById('importFavorites');
+    if (importInput) {
+        importInput.addEventListener('change', importFavorites);
+    }
+}
+
+// Export favorites to JSON file
+function exportFavorites() {
+    if (window.favorites.length === 0) {
+        alert('You have no favorites to export. Favorite some pets first!');
+        return;
+    }
+    
+    // Create the data to export
+    const exportData = {
+        favorites: window.favorites,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    // Convert to JSON
+    const jsonData = JSON.stringify(exportData, null, 2);
+    
+    // Create a blob
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    
+    // Create an object URL
+    const url = URL.createObjectURL(blob);
+    
+    // Create a download link and trigger it
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pspsps-favorites-${formatDate(new Date())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Show success message
+    const count = window.favorites.length;
+    const message = `Successfully exported ${count} ${count === 1 ? 'favorite' : 'favorites'}.`;
+    showToast(message);
+}
+
+// Import favorites from JSON file
+function importFavorites(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Validate the imported data
+            if (!data.favorites || !Array.isArray(data.favorites)) {
+                throw new Error('Invalid favorites file format');
+            }
+            
+            // Ask user if they want to replace or merge favorites
+            const existingCount = window.favorites.length;
+            const importCount = data.favorites.length;
+            
+            let action = 'merge';
+            if (existingCount > 0) {
+                action = confirm(
+                    `You currently have ${existingCount} favorites.\n\n` +
+                    `This file contains ${importCount} favorites.\n\n` +
+                    `Click OK to merge them with your current favorites.\n` +
+                    `Click Cancel to replace your current favorites.`
+                ) ? 'merge' : 'replace';
+            }
+            
+            // Process the favorites based on user choice
+            if (action === 'replace') {
+                window.favorites = [...data.favorites];
+            } else {
+                // Merge favorites (avoiding duplicates)
+                data.favorites.forEach(id => {
+                    if (!window.favorites.includes(id)) {
+                        window.favorites.push(id);
+                    }
+                });
+            }
+            
+            // Update the UI to reflect the new favorites
+            updateAllFavoritesInUI();
+            
+            // Show success message
+            const finalCount = window.favorites.length;
+            const message = `Successfully imported favorites. You now have ${finalCount} ${finalCount === 1 ? 'favorite' : 'favorites'}.`;
+            showToast(message);
+            
+            // If showing favorites only, refresh the search to show newly imported favorites
+            if (document.getElementById('favoritesOnly').checked) {
+                triggerSearch();
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            alert('Error importing favorites: ' + error.message);
+        }
+        
+        // Reset the file input
+        event.target.value = '';
+    };
+    
+    reader.onerror = function() {
+        alert('Error reading the file');
+        event.target.value = '';
+    };
+    
+    reader.readAsText(file);
+}
+
+// Helper function to format date for filename
+function formatDate(date) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+// Update all favorites in the UI
+function updateAllFavoritesInUI() {
+    // Update all pet cards in the results
+    const petCards = document.querySelectorAll('.pet');
+    petCards.forEach(card => {
+        const petId = card.getAttribute('data-pet-id');
+        const heartIcon = card.querySelector('.pet-favorite i');
+        if (heartIcon) {
+            if (window.favorites.includes(petId)) {
+                heartIcon.classList.add('active');
+            } else {
+                heartIcon.classList.remove('active');
+            }
+        }
+    });
+    
+    // Update pet details modal if open
+    const detailsModal = document.getElementById('petDetailsModal');
+    if (detailsModal && detailsModal.style.display === 'block') {
+        const container = document.getElementById('petDetailsContainer');
+        const petIdElement = container.querySelector('[data-pet-id]');
+        if (petIdElement) {
+            const petId = petIdElement.getAttribute('data-pet-id');
+            const heartIcon = container.querySelector('.pet-details-favorite i');
+            if (heartIcon) {
+                if (window.favorites.includes(petId)) {
+                    heartIcon.classList.add('active');
+                } else {
+                    heartIcon.classList.remove('active');
+                }
+            }
+        }
+    }
+}
+
+// Show a toast notification
+function showToast(message) {
+    // Create toast element if it doesn't exist
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        document.body.appendChild(toast);
+    }
+    
+    // Set message and show toast
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 }
