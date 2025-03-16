@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set up event handlers for the pet details modal
     setupPetDetailsModal();
+    
+    // Make functions available globally for inline onclick handlers
+    window.showOrganizationDetails = showOrganizationDetails;
+    window.closeNoResultsModal = closeNoResultsModal;
 });
 
 async function loadPets(page = 1) {
@@ -95,9 +99,12 @@ function populatePetElement(petElement, pet) {
         imgElement.setAttribute('data-photos', JSON.stringify(pet.photos));
         
         // Add click event to show modal with all photos
-        imgElement.addEventListener('click', function() {
+        imgElement.addEventListener('click', function(event) {
+            // Prevent event from bubbling up to the pet card
+            event.stopPropagation();
+            
             const photos = JSON.parse(this.getAttribute('data-photos'));
-            showPetImagesModal(photos);
+            showPetImagesModal(photos, event);
         });
     } else {
         imgElement.src = "images/placeholder-image-url.png";
@@ -145,34 +152,77 @@ function populatePetElement(petElement, pet) {
     petElement.appendChild(infoElement);
     
     // Make the entire pet card clickable to show pet details modal
-    petElement.addEventListener('click', function(event) {
-        // Don't open details if they clicked on the image (that opens the photo modal)
-        if (event.target !== imgElement) {
-            showPetDetailsModal(pet.id);
-        }
+    petElement.addEventListener('click', function() {
+        showPetDetailsModal(pet.id);
     });
     
     // Add hover state cursor
     petElement.style.cursor = 'pointer';
 }
 
-function showPetImagesModal(photos) {
-    // Assuming you have a modal element in your HTML with id 'petImageModal'
+function showPetImagesModal(photos, event) {
+    // Prevent default behavior if event is provided
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Set up the modal
     const modal = document.getElementById('petImageModal');
     const modalImages = document.getElementById('modalImages');
-    modalImages.innerHTML = photos.map(photo => `<img src="${photo.medium}" alt="Pet">`).join('');
+    
+    // Clear previous images and add new ones
+    modalImages.innerHTML = '';
+    photos.forEach(photo => {
+        const img = document.createElement('img');
+        img.src = photo.medium || photo.small || photo.large;
+        img.alt = "Pet photo";
+        img.onclick = function() {
+            window.open(photo.full, '_blank');
+        };
+        modalImages.appendChild(img);
+    });
 
+    // Display the modal
     modal.style.display = 'block';
-
+    
+    // Set up close button
     const closeButton = modal.querySelector('.close');
     closeButton.onclick = function() {
         modal.style.display = 'none';
-    }
+    };
+    
+    // Close when clicking outside
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
 }
 
 function displayNoResultsModal() {
-    // Display message when no results are found
-    alert("No pets found with those criteria. Please try a different search.");
+    const noResultsModal = document.getElementById('noResultsModal');
+    if (noResultsModal) {
+        noResultsModal.style.display = 'block';
+        
+        // Set up close functionality
+        const closeBtn = noResultsModal.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                noResultsModal.style.display = 'none';
+            };
+        }
+    } else {
+        // Fallback to alert if modal not found
+        alert("No pets found with those criteria. Please try a different search.");
+    }
+}
+
+function closeNoResultsModal() {
+    const noResultsModal = document.getElementById('noResultsModal');
+    if (noResultsModal) {
+        noResultsModal.style.display = 'none';
+    }
 }
 
 function displayError(message) {
@@ -196,34 +246,13 @@ function updateLoadMoreButton() {
 }
 
 function appendResults(pets) {
-    const results = document.getElementById('results');
+    const resultsContainer = document.getElementById('results');
+    
     pets.forEach(pet => {
         const petElement = document.createElement('div');
         petElement.className = 'pet';
-        const petDetailUrl = `pet-details.html?petId=${pet.id}`;
-        const imageUrl = pet.photos.length > 0 ? pet.photos[0].full : 'images/placeholder-image-url.png';
-        const location = pet.contact.address.city + ', ' + pet.contact.address.state;
-        const petDistance = pet.distance ? pet.distance.toFixed(1) + ' miles' : 'N/A';
-        const organization = pet.organization_id || 'N/A';
-        const breed = pet.breeds.primary || 'Unknown';
-        const size = pet.size || 'Unknown';
-        const petGender = pet.gender || 'Unknown';
-        const age = pet.age || 'Unknown';
-
-        petElement.innerHTML = `
-            <a href="${petDetailUrl}" target="_blank">
-                <img src="${imageUrl}" alt="Image of ${pet.name}" style="width:200px; height:auto;">
-            </a>
-            <h2>${pet.name}</h2>
-            <h3>${age}</h3>
-            <p><strong>Breed:</strong> ${breed}</p>
-            <p><strong>Size:</strong> ${size}</p>
-            <p><strong>Gender:</strong> ${petGender}</p>
-            <p><strong>Location:</strong> ${location}</p>
-            <p><strong>Distance:</strong> ${petDistance}</p>
-            <p><strong>Organization:</strong> ${organization}</p>
-        `;
-        results.appendChild(petElement);
+        populatePetElement(petElement, pet);
+        resultsContainer.appendChild(petElement);
     });
 }
 
@@ -291,6 +320,13 @@ async function fetchPetDetails(petId) {
     
     const data = await response.json();
     displayPetDetails(data.animal);
+}
+
+// Function to show organization details
+function showOrganizationDetails(orgId) {
+    // For now, just navigate to the organization details page
+    // In a future update, this could be changed to show organization details in a modal as well
+    window.location.href = `organization-details.html?orgId=${orgId}`;
 }
 
 // Display pet details in the modal
@@ -444,7 +480,7 @@ function displayPetDetails(pet) {
     html += `
         <div class="pet-details-footer">
             <a href="${pet.url}" target="_blank"><i class="fas fa-external-link-alt"></i> View on Petfinder</a>
-            <a href="organization-details.html?orgId=${pet.organization_id}" target="_blank"><i class="fas fa-building"></i> View Organization</a>
+            <a href="javascript:void(0);" onclick="showOrganizationDetails('${pet.organization_id}')"><i class="fas fa-building"></i> View Organization</a>
         </div>
     `;
     
