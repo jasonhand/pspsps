@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loadPets(currentPagination.next);
         }
     });
+    
+    // Set up event handlers for the pet details modal
+    setupPetDetailsModal();
 });
 
 async function loadPets(page = 1) {
@@ -141,11 +144,11 @@ function populatePetElement(petElement, pet) {
     
     petElement.appendChild(infoElement);
     
-    // Make the entire pet card clickable to go to details page
+    // Make the entire pet card clickable to show pet details modal
     petElement.addEventListener('click', function(event) {
-        // Don't redirect if they clicked on the image (that opens the modal)
+        // Don't open details if they clicked on the image (that opens the photo modal)
         if (event.target !== imgElement) {
-            window.location.href = `pet-details.html?id=${pet.id}`;
+            showPetDetailsModal(pet.id);
         }
     });
     
@@ -239,4 +242,212 @@ function displayResults(pets) {
     
     appendResults(pets);
     updateLoadMoreButton();
+}
+
+// Setup pet details modal
+function setupPetDetailsModal() {
+    const modal = document.getElementById('petDetailsModal');
+    const closeBtn = modal.querySelector('.close');
+    
+    // Close modal when close button is clicked
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Show pet details modal and fetch pet data
+async function showPetDetailsModal(petId) {
+    const modal = document.getElementById('petDetailsModal');
+    const container = document.getElementById('petDetailsContainer');
+    
+    // Display loading indicator
+    container.innerHTML = '<div class="pet-details-loading loading"></div>';
+    modal.style.display = 'block';
+    
+    try {
+        await fetchPetDetails(petId);
+    } catch (error) {
+        container.innerHTML = `<div class="error-message">
+            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff8066;"></i>
+            <p>Error loading pet details: ${error.message}</p>
+        </div>`;
+    }
+}
+
+// Fetch pet details from API
+async function fetchPetDetails(petId) {
+    const response = await fetch(`/.netlify/functions/petfinder-proxy/animals/${petId}`);
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    displayPetDetails(data.animal);
+}
+
+// Display pet details in the modal
+function displayPetDetails(pet) {
+    const container = document.getElementById('petDetailsContainer');
+    
+    // Build HTML for pet details
+    let html = `
+        <div class="pet-details-header">
+            <h2 class="pet-details-name">${pet.name}</h2>
+            <p class="pet-details-subtitle">${pet.age} · ${pet.gender} · ${pet.breeds.primary}${pet.breeds.secondary ? ` / ${pet.breeds.secondary}` : ''}</p>
+        </div>
+        
+        <div class="pet-details-images">
+    `;
+    
+    // Add images
+    if (pet.photos && pet.photos.length > 0) {
+        pet.photos.forEach(photo => {
+            html += `<img src="${photo.medium}" alt="${pet.name}" onclick="window.open('${photo.full}', '_blank')">`;
+        });
+    } else {
+        html += `<img src="images/placeholder-image-url.png" alt="${pet.name}">`;
+    }
+    
+    html += `</div>`;
+    
+    // Add description if available
+    if (pet.description) {
+        html += `
+            <div class="pet-details-description">
+                <p>${pet.description}</p>
+            </div>
+        `;
+    }
+    
+    // Add attributes in groups
+    html += `<div class="pet-details-attributes">`;
+    
+    // Basic info group
+    html += `
+        <div class="attribute-group">
+            <h3><i class="fas fa-info-circle"></i> Basic Info</h3>
+            
+            <div class="attribute">
+                <span class="attribute-label">Size</span>
+                <span class="attribute-value">${pet.size}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Color</span>
+                <span class="attribute-value">${pet.colors.primary || 'Unknown'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Coat</span>
+                <span class="attribute-value">${pet.coat || 'Unknown'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Status</span>
+                <span class="attribute-value">${pet.status}</span>
+            </div>
+        </div>
+    `;
+    
+    // Attributes group
+    html += `
+        <div class="attribute-group">
+            <h3><i class="fas fa-check-circle"></i> Attributes</h3>
+            
+            <div class="attribute">
+                <span class="attribute-label">Spayed/Neutered</span>
+                <span class="attribute-value">${pet.attributes.spayed_neutered ? 'Yes' : 'No'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">House Trained</span>
+                <span class="attribute-value">${pet.attributes.house_trained ? 'Yes' : 'No'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Declawed</span>
+                <span class="attribute-value">${pet.attributes.declawed ? 'Yes' : 'Unknown'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Special Needs</span>
+                <span class="attribute-value">${pet.attributes.special_needs ? 'Yes' : 'No'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Shots Current</span>
+                <span class="attribute-value">${pet.attributes.shots_current ? 'Yes' : 'No'}</span>
+            </div>
+        </div>
+    `;
+    
+    // Environment group
+    html += `
+        <div class="attribute-group">
+            <h3><i class="fas fa-home"></i> Environment</h3>
+            
+            <div class="attribute">
+                <span class="attribute-label">Good with Children</span>
+                <span class="attribute-value">${pet.environment && pet.environment.children !== null ? (pet.environment.children ? 'Yes' : 'No') : 'Unknown'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Good with Dogs</span>
+                <span class="attribute-value">${pet.environment && pet.environment.dogs !== null ? (pet.environment.dogs ? 'Yes' : 'No') : 'Unknown'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Good with Cats</span>
+                <span class="attribute-value">${pet.environment && pet.environment.cats !== null ? (pet.environment.cats ? 'Yes' : 'No') : 'Unknown'}</span>
+            </div>
+        </div>
+    `;
+    
+    // Contact group
+    html += `
+        <div class="attribute-group">
+            <h3><i class="fas fa-address-card"></i> Contact</h3>
+            
+            <div class="attribute">
+                <span class="attribute-label">Organization</span>
+                <span class="attribute-value">${pet.organization_id}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Email</span>
+                <span class="attribute-value">${pet.contact.email || 'Not provided'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Phone</span>
+                <span class="attribute-value">${pet.contact.phone || 'Not provided'}</span>
+            </div>
+            
+            <div class="attribute">
+                <span class="attribute-label">Address</span>
+                <span class="attribute-value">${pet.contact.address.city}, ${pet.contact.address.state} ${pet.contact.address.postcode}</span>
+            </div>
+        </div>
+    `;
+    
+    html += `</div>`; // End of attributes
+    
+    // Add footer with links
+    html += `
+        <div class="pet-details-footer">
+            <a href="${pet.url}" target="_blank"><i class="fas fa-external-link-alt"></i> View on Petfinder</a>
+            <a href="organization-details.html?orgId=${pet.organization_id}" target="_blank"><i class="fas fa-building"></i> View Organization</a>
+        </div>
+    `;
+    
+    // Update the container with the pet details
+    container.innerHTML = html;
 }
