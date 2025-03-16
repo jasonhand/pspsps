@@ -96,6 +96,10 @@ function populatePetElement(petElement, pet) {
     // Add pet ID as data attribute for favorite tracking
     petElement.setAttribute('data-pet-id', pet.id);
     
+    // Create image container for overlay elements
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'pet-image-container';
+    
     // Create image element
     const imgElement = document.createElement('img');
     
@@ -116,9 +120,15 @@ function populatePetElement(petElement, pet) {
         imgElement.src = "images/placeholder-image-url.png";
     }
     imgElement.alt = pet.name;
-    petElement.appendChild(imgElement);
+    imageContainer.appendChild(imgElement);
     
-    // Add heart favorite icon instead of status badge
+    // Add name overlay on the image
+    const nameOverlay = document.createElement('div');
+    nameOverlay.className = 'pet-name-overlay';
+    nameOverlay.textContent = pet.name;
+    imageContainer.appendChild(nameOverlay);
+    
+    // Add heart favorite icon
     const heartElement = document.createElement('div');
     heartElement.className = 'pet-favorite';
     const isFavorite = window.favorites.includes(pet.id);
@@ -130,20 +140,39 @@ function populatePetElement(petElement, pet) {
         toggleFavorite(pet.id, this);
     });
     
-    petElement.appendChild(heartElement);
+    imageContainer.appendChild(heartElement);
+    
+    // Add the image container to the pet element
+    petElement.appendChild(imageContainer);
 
     // Create pet info container
     const infoElement = document.createElement('div');
     infoElement.className = 'pet-info';
     
-    // Add pet name
-    const nameElement = document.createElement('h3');
-    nameElement.textContent = pet.name;
-    infoElement.appendChild(nameElement);
+    // Create gender and age indicators
+    const genderAgeElement = document.createElement('div');
+    genderAgeElement.className = 'pet-indicators';
+    
+    // Gender emoji
+    const genderElement = document.createElement('span');
+    genderElement.className = 'gender-indicator';
+    genderElement.innerHTML = pet.gender === 'Male' ? '♂' : '♀';
+    genderElement.title = pet.gender;
+    genderAgeElement.appendChild(genderElement);
+    
+    // Age indicator
+    const ageElement = document.createElement('span');
+    ageElement.className = 'age-indicator';
+    ageElement.setAttribute('data-age', pet.age.toLowerCase());
+    ageElement.title = pet.age;
+    genderAgeElement.appendChild(ageElement);
+    
+    infoElement.appendChild(genderAgeElement);
     
     // Add pet breed
     if (pet.breeds && pet.breeds.primary) {
         const breedElement = document.createElement('p');
+        breedElement.className = 'pet-breed';
         breedElement.textContent = pet.breeds.primary;
         if (pet.breeds.secondary) {
             breedElement.textContent += ` / ${pet.breeds.secondary}`;
@@ -151,15 +180,11 @@ function populatePetElement(petElement, pet) {
         infoElement.appendChild(breedElement);
     }
     
-    // Add pet age and gender
-    const ageGenderElement = document.createElement('p');
-    ageGenderElement.textContent = `${pet.age} · ${pet.gender}`;
-    infoElement.appendChild(ageGenderElement);
-    
     // Add location if available
     if (pet.contact && pet.contact.address && pet.contact.address.city && pet.contact.address.state) {
         const locationElement = document.createElement('p');
-        locationElement.textContent = `${pet.contact.address.city}, ${pet.contact.address.state}`;
+        locationElement.className = 'pet-location';
+        locationElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${pet.contact.address.city}, ${pet.contact.address.state}`;
         infoElement.appendChild(locationElement);
     }
     
@@ -352,14 +377,18 @@ function displayPetDetails(pet) {
     
     // Build HTML for pet details
     let html = `
-        <div class="pet-details-header">
+        <div class="pet-details-header" data-pet-id="${pet.id}">
             <h2 class="pet-details-name">
                 ${pet.name}
                 <span class="pet-details-favorite" onclick="toggleFavorite('${pet.id}')">
                     <i class="fas fa-heart ${isFavorite ? 'active' : ''}"></i>
                 </span>
             </h2>
-            <p class="pet-details-subtitle">${pet.age} · ${pet.gender} · ${pet.breeds.primary}${pet.breeds.secondary ? ` / ${pet.breeds.secondary}` : ''}</p>
+            <p class="pet-details-subtitle">
+                <span class="pet-details-gender">${pet.gender === 'Male' ? '♂' : '♀'}</span>
+                <span class="pet-details-age">${pet.age}</span>
+                <span class="pet-details-breed">${pet.breeds.primary}${pet.breeds.secondary ? ` / ${pet.breeds.secondary}` : ''}</span>
+            </p>
         </div>
         
         <div class="pet-details-images">
@@ -535,8 +564,31 @@ function toggleFavorite(petId, heartElement) {
     // Update all instances of this pet's heart in the grid
     updateFavoriteStatusInGrid(petId, index === -1);
     
+    // Update the pet details modal heart if it's currently showing this pet
+    updatePetDetailsModalHeart(petId, index === -1);
+    
     // Log current favorites (could be used for other features later)
     console.log('Current favorites:', window.favorites);
+}
+
+// Update the heart in the pet details modal if it's showing
+function updatePetDetailsModalHeart(petId, isFavorite) {
+    const modal = document.getElementById('petDetailsModal');
+    if (modal.style.display === 'block') {
+        const detailsContainer = document.getElementById('petDetailsContainer');
+        const petIdElement = detailsContainer.querySelector('[data-pet-id]');
+        
+        if (petIdElement && petIdElement.getAttribute('data-pet-id') === petId) {
+            const heartIcon = detailsContainer.querySelector('.pet-details-favorite i');
+            if (heartIcon) {
+                if (isFavorite) {
+                    heartIcon.classList.add('active');
+                } else {
+                    heartIcon.classList.remove('active');
+                }
+            }
+        }
+    }
 }
 
 // Update all instances of a pet's favorite status in the results grid
