@@ -1,10 +1,43 @@
 const axios = require('axios');
-// Try to load dotenv, but don't fail if it's not available
-try {
-  require('dotenv').config({ path: '../../.env' });
-} catch (error) {
-  console.log('dotenv not available, using environment variables only');
+
+// Simple inline dotenv implementation (in case the module is not available)
+function loadEnv() {
+  try {
+    // Try to use the regular dotenv package first
+    require('dotenv').config({ path: '../../.env' });
+  } catch (error) {
+    console.log('dotenv module not available, using inline implementation');
+    try {
+      // Minimal inline implementation of dotenv
+      const fs = require('fs');
+      const path = require('path');
+      const envPath = path.resolve(__dirname, '../../.env');
+      
+      if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const envLines = envContent.split('\n').filter(line => line.trim() !== '' && !line.startsWith('#'));
+        
+        envLines.forEach(line => {
+          const [key, ...valueParts] = line.split('=');
+          if (key && valueParts.length > 0) {
+            const value = valueParts.join('=');
+            process.env[key.trim()] = value.trim();
+          }
+        });
+        
+        console.log('Environment variables loaded from .env file');
+      } else {
+        console.log('.env file not found, using system environment variables');
+      }
+    } catch (innerError) {
+      console.log('Error loading .env file:', innerError.message);
+      console.log('Continuing with system environment variables');
+    }
+  }
 }
+
+// Load environment variables
+loadEnv();
 
 // For local development, use .env file
 // For Netlify, these will be set in the Netlify dashboard

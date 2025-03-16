@@ -7,8 +7,7 @@
   functions = "netlify/functions"
   port = 8888
   
-[[plugins]]
-  package = "@netlify/plugin-functions-install-core"
+# Function dependencies will be installed by the build script
   
 [[redirects]]
   from = "/api/*"
