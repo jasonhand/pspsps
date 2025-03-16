@@ -1,5 +1,10 @@
 const axios = require('axios');
-require('dotenv').config({ path: '../../.env' });
+// Try to load dotenv, but don't fail if it's not available
+try {
+  require('dotenv').config({ path: '../../.env' });
+} catch (error) {
+  console.log('dotenv not available, using environment variables only');
+}
 
 // For local development, use .env file
 // For Netlify, these will be set in the Netlify dashboard
