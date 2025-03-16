@@ -79,6 +79,19 @@
                     </select>
                 </div>
             </div>
+            
+            <div class="filter-options">
+                <div class="filter-option">
+                    <input type="checkbox" id="favoritesOnly" name="favoritesOnly">
+                    <label for="favoritesOnly"><i class="fas fa-heart"></i> Show favorites only</label>
+                </div>
+                
+                <div class="filter-option">
+                    <input type="checkbox" id="withPhotosOnly" name="withPhotosOnly" checked>
+                    <label for="withPhotosOnly"><i class="fas fa-image"></i> Show animals with photos only</label>
+                </div>
+            </div>
+            
             <button type="submit"><i class="fas fa-search"></i> Search Pets</button>
         </form>
 
@@ -113,7 +126,15 @@
             <div class="modal-content">
                 <span class="close" onclick="closeNoResultsModal()">&times;</span>
                 <i class="fas fa-search" style="font-size: 3rem; color: #4e937a;"></i>
-                <p>No results found. Please try a different search.</p>
+                <p id="noResultsMessage">No results found. Please try a different search.</p>
+                <div id="favoritesNoResultsTip" style="display:none; margin-top: 15px;">
+                    <p><strong>Tip:</strong> You have the "Show favorites only" filter enabled. 
+                    Try disabling this filter or favorite some pets first.</p>
+                </div>
+                <div id="withPhotosNoResultsTip" style="display:none; margin-top: 15px;">
+                    <p><strong>Tip:</strong> You have the "Show animals with photos only" filter enabled. 
+                    Try disabling this filter to see more results.</p>
+                </div>
             </div>
         </div>
         

@@ -37,11 +37,14 @@ async function loadPets(page = 1) {
     const animalType = document.getElementById('animalType').value;
     const gender = document.getElementById('gender').value;
     const distance = document.getElementById('distance').value;
-    const animalAge = document.getElementById('animalAge').value; // Corrected line
-    await fetchPets(location, animalType, gender, distance, animalAge, page);
+    const animalAge = document.getElementById('animalAge').value;
+    const favoritesOnly = document.getElementById('favoritesOnly').checked;
+    const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
+    
+    await fetchPets(location, animalType, gender, distance, animalAge, page, favoritesOnly, withPhotosOnly);
 }
 
-async function fetchPets(location, animalType, gender, distance, animalAge, page) {
+async function fetchPets(location, animalType, gender, distance, animalAge, page, favoritesOnly, withPhotosOnly) {
     try {
         let url = `/.netlify/functions/petfinder-proxy/animals?location=${encodeURIComponent(location)}&limit=50`;
         if (animalType) {
@@ -61,7 +64,6 @@ async function fetchPets(location, animalType, gender, distance, animalAge, page
         const response = await fetch(url);
 
         if (!response.ok) {
-            // Log and handle HTTP errors from the server
             console.error(`HTTP error from proxy server! Status: ${response.status}`);
             displayError(`HTTP error from proxy server! Status: ${response.status}`);
             return;
@@ -75,13 +77,39 @@ async function fetchPets(location, animalType, gender, distance, animalAge, page
         }
 
         currentPagination = data.pagination;
+        
+        // Filter results based on user preferences
+        let filteredPets = data.animals;
+        
+        // Filter for pets with photos if requested
+        if (withPhotosOnly) {
+            filteredPets = filteredPets.filter(pet => pet.photos && pet.photos.length > 0);
+        }
+        
+        // Filter for favorited pets if requested
+        if (favoritesOnly) {
+            filteredPets = filteredPets.filter(pet => window.favorites.includes(pet.id));
+        }
+        
+        // If no results after filtering
+        if (filteredPets.length === 0) {
+            displayNoResultsModal();
+            return;
+        }
+        
+        // Prioritize pets with photos even if not filtering exclusively for them
+        const petsWithPhotos = filteredPets.filter(pet => pet.photos && pet.photos.length > 0);
+        const petsWithoutPhotos = filteredPets.filter(pet => !pet.photos || pet.photos.length === 0);
+        
+        // Combine the arrays, with pets with photos first
+        const prioritizedPets = [...petsWithPhotos, ...petsWithoutPhotos];
+        
         updateLoadMoreButton();
 
-        const petsWithPhotos = data.animals.filter(pet => pet.photos && pet.photos.length > 0);
         if (page === 1) {
-            displayResults(petsWithPhotos);
+            displayResults(prioritizedPets);
         } else {
-            appendResults(petsWithPhotos);
+            appendResults(prioritizedPets);
         }
     } catch (error) {
         console.error("Error in fetchPets:", error);
@@ -107,19 +135,29 @@ function populatePetElement(petElement, pet) {
     if (pet.photos && pet.photos.length > 0) {
         imgElement.src = pet.photos[0].medium || pet.photos[0].small || pet.photos[0].large;
         imgElement.setAttribute('data-photos', JSON.stringify(pet.photos));
-        
-        // No longer need separate click handler for images - removed
     } else {
         imgElement.src = "images/placeholder-image-url.png";
     }
     imgElement.alt = pet.name;
     imageContainer.appendChild(imgElement);
     
-    // Add name overlay on the image
+    // Add name overlay on the image (bottom)
     const nameOverlay = document.createElement('div');
     nameOverlay.className = 'pet-name-overlay';
     nameOverlay.textContent = pet.name;
     imageContainer.appendChild(nameOverlay);
+    
+    // Add age overlay (top left)
+    const ageOverlay = document.createElement('div');
+    ageOverlay.className = 'pet-age-overlay';
+    ageOverlay.textContent = pet.age;
+    imageContainer.appendChild(ageOverlay);
+    
+    // Add gender overlay (bottom right)
+    const genderOverlay = document.createElement('div');
+    genderOverlay.className = 'pet-gender-overlay';
+    genderOverlay.textContent = pet.gender;
+    imageContainer.appendChild(genderOverlay);
     
     // Add heart favorite icon
     const heartElement = document.createElement('div');
@@ -141,26 +179,6 @@ function populatePetElement(petElement, pet) {
     // Create pet info container
     const infoElement = document.createElement('div');
     infoElement.className = 'pet-info';
-    
-    // Create gender and age indicators
-    const genderAgeElement = document.createElement('div');
-    genderAgeElement.className = 'pet-indicators';
-    
-    // Gender emoji
-    const genderElement = document.createElement('span');
-    genderElement.className = 'gender-indicator';
-    genderElement.innerHTML = pet.gender === 'Male' ? '♂' : '♀';
-    genderElement.title = pet.gender;
-    genderAgeElement.appendChild(genderElement);
-    
-    // Age indicator
-    const ageElement = document.createElement('span');
-    ageElement.className = 'age-indicator';
-    ageElement.setAttribute('data-age', pet.age.toLowerCase());
-    ageElement.title = pet.age;
-    genderAgeElement.appendChild(ageElement);
-    
-    infoElement.appendChild(genderAgeElement);
     
     // Add pet breed
     if (pet.breeds && pet.breeds.primary) {
@@ -239,6 +257,32 @@ function showPetImagesModal(photos, event) {
 function displayNoResultsModal() {
     const noResultsModal = document.getElementById('noResultsModal');
     if (noResultsModal) {
+        // Get current filter states
+        const favoritesOnly = document.getElementById('favoritesOnly').checked;
+        const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
+        
+        // Update tip visibility based on active filters
+        const favoritesTip = document.getElementById('favoritesNoResultsTip');
+        const photosTip = document.getElementById('withPhotosNoResultsTip');
+        
+        if (favoritesTip) {
+            favoritesTip.style.display = favoritesOnly ? 'block' : 'none';
+        }
+        
+        if (photosTip) {
+            photosTip.style.display = withPhotosOnly ? 'block' : 'none';
+        }
+        
+        // Update main message
+        if (favoritesOnly && window.favorites.length === 0) {
+            document.getElementById('noResultsMessage').textContent = 
+                "You don't have any favorited pets yet. Try favoriting some pets first or disable the favorites filter.";
+        } else {
+            document.getElementById('noResultsMessage').textContent = 
+                "No pets found with your search criteria. Please try a different search.";
+        }
+        
+        // Show the modal
         noResultsModal.style.display = 'block';
         
         // Set up close functionality
@@ -382,8 +426,8 @@ function displayPetDetails(pet) {
                 </span>
             </h2>
             <p class="pet-details-subtitle">
-                <span class="pet-details-gender">${pet.gender === 'Male' ? '♂' : '♀'}</span>
                 <span class="pet-details-age">${pet.age}</span>
+                <span class="pet-details-gender">${pet.gender}</span>
                 <span class="pet-details-breed">${pet.breeds.primary}${pet.breeds.secondary ? ` / ${pet.breeds.secondary}` : ''}</span>
             </p>
         </div>

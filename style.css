@@ -187,6 +187,39 @@ button:hover {
   margin-top: 30px;
 }
 
+/* Filter Options */
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-option input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+.filter-option label {
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-option i {
+  color: var(--primary-color);
+}
+
 /* Pet Card Styles */
 .pet {
   position: relative;
@@ -244,6 +277,7 @@ button:hover {
   }
 }
 
+/* Name overlay at bottom */
 .pet-name-overlay {
   position: absolute;
   bottom: 0;
@@ -261,6 +295,36 @@ button:hover {
   z-index: 5; /* Ensure it's above the image */
 }
 
+/* Age indicator at top left */
+.pet-age-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 5;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Gender indicator at bottom right */
+.pet-gender-overlay {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 5;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+
 .pet-info {
   padding: 15px;
   background: #fff;
@@ -269,76 +333,9 @@ button:hover {
   flex-direction: column;
 }
 
+/* Remove the old indicators section */
 .pet-indicators {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.gender-indicator, .age-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-}
-
-.gender-indicator {
-  background-color: var(--quaternary-color);
-  color: var(--primary-color);
-  font-size: 1.2rem;
-}
-
-.age-indicator {
-  min-width: 20px;
-  height: 20px;
-  border-radius: 50%;
-}
-
-/* Age indicators with different colors */
-.age-indicator[data-age="baby"] {
-  background-color: var(--accent-color);
-}
-
-.age-indicator[data-age="young"] {
-  background-color: var(--tertiary-color);
-}
-
-.age-indicator[data-age="adult"] {
-  background-color: var(--primary-color);
-}
-
-.age-indicator[data-age="senior"] {
-  background-color: #A0A0A0;
-}
-
-/* Age indicator patterns */
-.age-indicator[data-age="baby"]::after {
-  content: "";
-  display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: white;
-}
-
-.age-indicator[data-age="young"]::after {
-  content: "●●";
-  font-size: 10px;
-  color: white;
-}
-
-.age-indicator[data-age="adult"]::after {
-  content: "●●●";
-  font-size: 10px;
-  color: white;
-}
-
-.age-indicator[data-age="senior"]::after {
-  content: "●●●●";
-  font-size: 10px;
-  color: white;
+  display: none;
 }
 
 .pet-breed {
@@ -564,13 +561,12 @@ button:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background-color: var(--quaternary-color);
-  color: var(--primary-color);
-  border-radius: 50%;
-  font-size: 1.3rem;
-  font-weight: bold;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .pet-details-age {
