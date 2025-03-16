@@ -108,14 +108,7 @@ function populatePetElement(petElement, pet) {
         imgElement.src = pet.photos[0].medium || pet.photos[0].small || pet.photos[0].large;
         imgElement.setAttribute('data-photos', JSON.stringify(pet.photos));
         
-        // Add click event to show modal with all photos
-        imgElement.addEventListener('click', function(event) {
-            // Prevent event from bubbling up to the pet card
-            event.stopPropagation();
-            
-            const photos = JSON.parse(this.getAttribute('data-photos'));
-            showPetImagesModal(photos, event);
-        });
+        // No longer need separate click handler for images - removed
     } else {
         imgElement.src = "images/placeholder-image-url.png";
     }
@@ -199,7 +192,11 @@ function populatePetElement(petElement, pet) {
     petElement.style.cursor = 'pointer';
 }
 
+// Function to show pet images in a modal
 function showPetImagesModal(photos, event) {
+    // We'll no longer directly call this function from image click
+    // Instead, we'll use it from within the pet details modal
+    
     // Prevent default behavior if event is provided
     if (event) {
         event.preventDefault();
@@ -396,8 +393,8 @@ function displayPetDetails(pet) {
     
     // Add images
     if (pet.photos && pet.photos.length > 0) {
-        pet.photos.forEach(photo => {
-            html += `<img src="${photo.medium}" alt="${pet.name}" onclick="window.open('${photo.full}', '_blank')">`;
+        pet.photos.forEach((photo, index) => {
+            html += `<img src="${photo.medium}" alt="${pet.name}" class="pet-full-image" data-index="${index}">`;
         });
     } else {
         html += `<img src="images/placeholder-image-url.png" alt="${pet.name}">`;
@@ -537,6 +534,17 @@ function displayPetDetails(pet) {
     
     // Update the container with the pet details
     container.innerHTML = html;
+    
+    // Add click handlers to the images to view them in the modal
+    if (pet.photos && pet.photos.length > 0) {
+        const images = container.querySelectorAll('.pet-full-image');
+        images.forEach(img => {
+            img.addEventListener('click', function(event) {
+                // Show all images in the image modal
+                showPetImagesModal(pet.photos, event);
+            });
+        });
+    }
 }
 
 // Function to toggle pet as favorite
