@@ -21,16 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners for all filter inputs to enable hot reload
     setupHotReload();
 
+    // Handle form submission (for when user presses Enter in location field)
     document.getElementById('zipForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        currentPagination = null; // Reset pagination on new search
         
-        // Show loading indicator
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('results').innerHTML = '';
-        document.getElementById('loadMore').style.display = 'none';
-        
-        loadPets();
+        const locationInput = document.getElementById('location');
+        if (locationInput.value.trim()) {
+            triggerSearch();
+        }
     });
 
     document.getElementById('loadMore').addEventListener('click', function() {
@@ -300,201 +298,11 @@ function populatePetElement(petElement, pet) {
     petElement.style.cursor = 'pointer';
 }
 
-// Function to show pet images in a modal
-function showPetImagesModal(photos, event) {
-    // Prevent default behavior if event is provided
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    // Set up the modal
-    const modal = document.getElementById('petImageModal');
-    const modalImages = document.getElementById('modalImages');
-    
-    // Clear previous images and add new ones
-    modalImages.innerHTML = '';
-    photos.forEach(photo => {
-        // Create image container
-        const imgContainer = document.createElement('div');
-        imgContainer.className = 'modal-image-container';
-        
-        // Create image element
-        const img = document.createElement('img');
-        img.src = photo.medium || photo.small || photo.large;
-        img.alt = "Pet photo";
-        img.onclick = function() {
-            window.open(photo.full, '_blank');
-        };
-        
-        imgContainer.appendChild(img);
-        modalImages.appendChild(imgContainer);
-    });
-
-    // Display the modal
-    modal.style.display = 'block';
-    
-    // Set up close button
-    const closeButton = modal.querySelector('.close');
-    closeButton.onclick = function() {
-        modal.style.display = 'none';
-    };
-    
-    // Close when clicking outside
-    window.onclick = function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    };
-}
-
-function displayNoResultsModal() {
-    const noResultsModal = document.getElementById('noResultsModal');
-    if (noResultsModal) {
-        // Get current filter states
-        const favoritesOnly = document.getElementById('favoritesOnly').checked;
-        const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
-        
-        // Update tip visibility based on active filters
-        const favoritesTip = document.getElementById('favoritesNoResultsTip');
-        const photosTip = document.getElementById('withPhotosNoResultsTip');
-        
-        if (favoritesTip) {
-            favoritesTip.style.display = favoritesOnly ? 'block' : 'none';
-        }
-        
-        if (photosTip) {
-            photosTip.style.display = withPhotosOnly ? 'block' : 'none';
-        }
-        
-        // Update main message
-        if (favoritesOnly && window.favorites.length === 0) {
-            document.getElementById('noResultsMessage').textContent = 
-                "You don't have any favorited pets yet. Try favoriting some pets first or disable the favorites filter.";
-        } else {
-            document.getElementById('noResultsMessage').textContent = 
-                "No pets found with your search criteria. Please try a different search.";
-        }
-        
-        // Show the modal
-        noResultsModal.style.display = 'block';
-        
-        // Set up close functionality
-        const closeBtn = noResultsModal.querySelector('.close');
-        if (closeBtn) {
-            closeBtn.onclick = function() {
-                noResultsModal.style.display = 'none';
-            };
-        }
-    } else {
-        // Fallback to alert if modal not found
-        alert("No pets found with those criteria. Please try a different search.");
-    }
-}
-
-function closeNoResultsModal() {
-    const noResultsModal = document.getElementById('noResultsModal');
-    if (noResultsModal) {
-        noResultsModal.style.display = 'none';
-    }
-}
-
-function displayError(message) {
-    // Display error message to the user
-    const errorModal = document.getElementById('errorModal');
-    if (errorModal) {
-        errorModal.querySelector('.modal-content p').textContent = message;
-        errorModal.style.display = 'block';
-    } else {
-        alert(message);
-    }
-}
-
-function updateLoadMoreButton() {
-    const loadMoreButton = document.getElementById('loadMore');
-    if (currentPagination && currentPagination.next) {
-        loadMoreButton.style.display = 'block';
-    } else {
-        loadMoreButton.style.display = 'none';
-    }
-}
-
-function appendResults(pets) {
-    const resultsContainer = document.getElementById('results');
-    
-    pets.forEach(pet => {
-        const petElement = document.createElement('div');
-        petElement.className = 'pet';
-        populatePetElement(petElement, pet);
-        resultsContainer.appendChild(petElement);
-    });
-}
-
-function displayResults(pets) {
-    const resultsContainer = document.getElementById('results');
-    
-    if (currentPagination === null) {
-        // Clear results for new search
-        resultsContainer.innerHTML = '';
-    }
-    
-    if (pets.length === 0) {
-        displayNoResultsModal();
-        return;
-    }
-    
-    appendResults(pets);
-    updateLoadMoreButton();
-}
-
-// Setup pet details modal
-function setupPetDetailsModal() {
-    const modal = document.getElementById('petDetailsModal');
-    const closeBtn = modal.querySelector('.close');
-    
-    // Close modal when close button is clicked
-    closeBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-    
-    // Close modal when clicking outside the content
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-}
-
-// Show pet details modal and fetch pet data
-async function showPetDetailsModal(petId) {
-    const modal = document.getElementById('petDetailsModal');
-    const container = document.getElementById('petDetailsContainer');
-    
-    // Display loading indicator
-    container.innerHTML = '<div class="pet-details-loading loading"></div>';
-    modal.style.display = 'block';
-    
-    try {
-        await fetchPetDetails(petId);
-    } catch (error) {
-        container.innerHTML = `<div class="error-message">
-            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff8066;"></i>
-            <p>Error loading pet details: ${error.message}</p>
-        </div>`;
-    }
-}
-
-// Fetch pet details from API
-async function fetchPetDetails(petId) {
-    const response = await fetch(`/.netlify/functions/petfinder-proxy/animals/${petId}`);
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    displayPetDetails(data.animal);
-}
+// Global variable to store current gallery state
+let galleryState = {
+    photos: [],
+    currentIndex: 0
+};
 
 // Display pet details in the modal
 function displayPetDetails(pet) {
@@ -674,16 +482,277 @@ function displayPetDetails(pet) {
     // Update the container with the pet details
     container.innerHTML = html;
     
-    // Add click handlers to the images to view them in the modal
+    // Add click handlers to the images to open the image gallery
     if (pet.photos && pet.photos.length > 0) {
+        // Store pet photos in the gallery state
+        galleryState.photos = pet.photos;
+        
         const images = container.querySelectorAll('.pet-full-image');
         images.forEach(img => {
             img.addEventListener('click', function(event) {
-                // Show all images in the image modal
-                showPetImagesModal(pet.photos, event);
+                // Show the gallery with the clicked image
+                const index = parseInt(this.dataset.index, 10);
+                showImageGallery(index);
+                
+                // Prevent event from bubbling up
+                event.stopPropagation();
             });
         });
     }
+}
+
+// Image Gallery Functions
+function showImageGallery(startIndex = 0) {
+    if (!galleryState.photos || galleryState.photos.length === 0) {
+        console.error('No photos available for gallery');
+        return;
+    }
+    
+    // Set the current index and update the display
+    galleryState.currentIndex = startIndex;
+    updateGalleryDisplay();
+    
+    // Show the gallery modal
+    const galleryModal = document.getElementById('imageGalleryModal');
+    galleryModal.style.display = 'block';
+    
+    // Setup event handlers if not already set
+    setupGalleryEventHandlers();
+}
+
+function updateGalleryDisplay() {
+    // Update the image source
+    const currentPhoto = galleryState.photos[galleryState.currentIndex];
+    const img = document.getElementById('galleryCurrentImage');
+    img.src = currentPhoto.full || currentPhoto.large || currentPhoto.medium;
+    
+    // Update the counter
+    document.getElementById('galleryCurrentIndex').textContent = galleryState.currentIndex + 1;
+    document.getElementById('galleryTotalImages').textContent = galleryState.photos.length;
+    
+    // Update button states
+    const prevButton = document.querySelector('.gallery-nav.prev-button');
+    const nextButton = document.querySelector('.gallery-nav.next-button');
+    
+    prevButton.disabled = galleryState.currentIndex === 0;
+    nextButton.disabled = galleryState.currentIndex === galleryState.photos.length - 1;
+}
+
+function setupGalleryEventHandlers() {
+    const galleryModal = document.getElementById('imageGalleryModal');
+    const closeBtn = galleryModal.querySelector('.close');
+    const prevButton = galleryModal.querySelector('.prev-button');
+    const nextButton = galleryModal.querySelector('.next-button');
+    
+    // Close button handler
+    closeBtn.onclick = function() {
+        galleryModal.style.display = 'none';
+        cleanupGalleryEventHandlers();
+    };
+    
+    // Click outside to close
+    window.onclick = function(event) {
+        if (event.target === galleryModal) {
+            galleryModal.style.display = 'none';
+            cleanupGalleryEventHandlers();
+        }
+    };
+    
+    // Navigation button handlers
+    prevButton.onclick = function() {
+        if (galleryState.currentIndex > 0) {
+            galleryState.currentIndex--;
+            updateGalleryDisplay();
+        }
+    };
+    
+    nextButton.onclick = function() {
+        if (galleryState.currentIndex < galleryState.photos.length - 1) {
+            galleryState.currentIndex++;
+            updateGalleryDisplay();
+        }
+    };
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', handleGalleryKeydown);
+}
+
+function handleGalleryKeydown(event) {
+    const galleryModal = document.getElementById('imageGalleryModal');
+    
+    // Only handle keydown if gallery is open
+    if (galleryModal.style.display === 'block') {
+        switch (event.key) {
+            case 'ArrowLeft':
+                if (galleryState.currentIndex > 0) {
+                    galleryState.currentIndex--;
+                    updateGalleryDisplay();
+                }
+                break;
+            case 'ArrowRight':
+                if (galleryState.currentIndex < galleryState.photos.length - 1) {
+                    galleryState.currentIndex++;
+                    updateGalleryDisplay();
+                }
+                break;
+            case 'Escape':
+                galleryModal.style.display = 'none';
+                break;
+        }
+    }
+}
+
+// Cleanup event listener when the gallery is closed
+function cleanupGalleryEventHandlers() {
+    document.removeEventListener('keydown', handleGalleryKeydown);
+}
+
+function displayNoResultsModal() {
+    const noResultsModal = document.getElementById('noResultsModal');
+    if (noResultsModal) {
+        // Get current filter states
+        const favoritesOnly = document.getElementById('favoritesOnly').checked;
+        const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
+        
+        // Update tip visibility based on active filters
+        const favoritesTip = document.getElementById('favoritesNoResultsTip');
+        const photosTip = document.getElementById('withPhotosNoResultsTip');
+        
+        if (favoritesTip) {
+            favoritesTip.style.display = favoritesOnly ? 'block' : 'none';
+        }
+        
+        if (photosTip) {
+            photosTip.style.display = withPhotosOnly ? 'block' : 'none';
+        }
+        
+        // Update main message
+        if (favoritesOnly && window.favorites.length === 0) {
+            document.getElementById('noResultsMessage').textContent = 
+                "You don't have any favorited pets yet. Try favoriting some pets first or disable the favorites filter.";
+        } else {
+            document.getElementById('noResultsMessage').textContent = 
+                "No pets found with your search criteria. Please try a different search.";
+        }
+        
+        // Show the modal
+        noResultsModal.style.display = 'block';
+        
+        // Set up close functionality
+        const closeBtn = noResultsModal.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                noResultsModal.style.display = 'none';
+            };
+        }
+    } else {
+        // Fallback to alert if modal not found
+        alert("No pets found with those criteria. Please try a different search.");
+    }
+}
+
+function closeNoResultsModal() {
+    const noResultsModal = document.getElementById('noResultsModal');
+    if (noResultsModal) {
+        noResultsModal.style.display = 'none';
+    }
+}
+
+function displayError(message) {
+    // Display error message to the user
+    const errorModal = document.getElementById('errorModal');
+    if (errorModal) {
+        errorModal.querySelector('.modal-content p').textContent = message;
+        errorModal.style.display = 'block';
+    } else {
+        alert(message);
+    }
+}
+
+function updateLoadMoreButton() {
+    const loadMoreButton = document.getElementById('loadMore');
+    if (currentPagination && currentPagination.next) {
+        loadMoreButton.style.display = 'block';
+    } else {
+        loadMoreButton.style.display = 'none';
+    }
+}
+
+function appendResults(pets) {
+    const resultsContainer = document.getElementById('results');
+    
+    pets.forEach(pet => {
+        const petElement = document.createElement('div');
+        petElement.className = 'pet';
+        populatePetElement(petElement, pet);
+        resultsContainer.appendChild(petElement);
+    });
+}
+
+function displayResults(pets) {
+    const resultsContainer = document.getElementById('results');
+    
+    if (currentPagination === null) {
+        // Clear results for new search
+        resultsContainer.innerHTML = '';
+    }
+    
+    if (pets.length === 0) {
+        displayNoResultsModal();
+        return;
+    }
+    
+    appendResults(pets);
+    updateLoadMoreButton();
+}
+
+// Setup pet details modal
+function setupPetDetailsModal() {
+    const modal = document.getElementById('petDetailsModal');
+    const closeBtn = modal.querySelector('.close');
+    
+    // Close modal when close button is clicked
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Show pet details modal and fetch pet data
+async function showPetDetailsModal(petId) {
+    const modal = document.getElementById('petDetailsModal');
+    const container = document.getElementById('petDetailsContainer');
+    
+    // Display loading indicator
+    container.innerHTML = '<div class="pet-details-loading loading"></div>';
+    modal.style.display = 'block';
+    
+    try {
+        await fetchPetDetails(petId);
+    } catch (error) {
+        container.innerHTML = `<div class="error-message">
+            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff8066;"></i>
+            <p>Error loading pet details: ${error.message}</p>
+        </div>`;
+    }
+}
+
+// Fetch pet details from API
+async function fetchPetDetails(petId) {
+    const response = await fetch(`/.netlify/functions/petfinder-proxy/animals/${petId}`);
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    displayPetDetails(data.animal);
 }
 
 // Function to toggle pet as favorite
