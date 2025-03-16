@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     let currentPagination = null;
-    // Add favorites array to store favorited pet IDs
-    window.favorites = [];
     
     // Initialize distance slider value display
     const distanceSlider = document.getElementById('distance');
@@ -45,13 +43,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event handlers for the organization details modal
     setupOrganizationDetailsModal();
     
-    // Set up event handlers for favorites import/export
-    setupFavoritesImportExport();
-    
     // Make functions available globally for inline onclick handlers
     window.showOrganizationDetails = showOrganizationDetails;
     window.closeNoResultsModal = closeNoResultsModal;
-    window.toggleFavorite = toggleFavorite;
 });
 
 // Set up hot reload functionality
@@ -102,10 +96,6 @@ function setupHotReload() {
     document.querySelectorAll('input[name="animalAge"]').forEach(checkbox => {
         checkbox.addEventListener('change', triggerSearch);
     });
-    
-    // Filter checkboxes
-    document.getElementById('favoritesOnly').addEventListener('change', triggerSearch);
-    document.getElementById('withPhotosOnly').addEventListener('change', triggerSearch);
 }
 
 async function loadPets(page = 1) {
@@ -125,13 +115,10 @@ async function loadPets(page = 1) {
     const ageCheckboxes = document.querySelectorAll('input[name="animalAge"]:checked');
     const selectedAges = Array.from(ageCheckboxes).map(checkbox => checkbox.value);
     
-    const favoritesOnly = document.getElementById('favoritesOnly').checked;
-    const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
-    
-    await fetchPets(location, animalType, gender, distance, selectedAges, page, favoritesOnly, withPhotosOnly);
+    await fetchPets(location, animalType, gender, distance, selectedAges, page);
 }
 
-async function fetchPets(location, animalType, gender, distance, selectedAges, page, favoritesOnly, withPhotosOnly) {
+async function fetchPets(location, animalType, gender, distance, selectedAges, page) {
     try {
         let url = `/.netlify/functions/petfinder-proxy/animals?location=${encodeURIComponent(location)}&limit=50`;
         if (animalType) {
@@ -169,38 +156,12 @@ async function fetchPets(location, animalType, gender, distance, selectedAges, p
 
         currentPagination = data.pagination;
         
-        // Filter results based on user preferences
-        let filteredPets = data.animals;
-        
-        // Filter for pets with photos if requested
-        if (withPhotosOnly) {
-            filteredPets = filteredPets.filter(pet => pet.photos && pet.photos.length > 0);
-        }
-        
-        // Filter for favorited pets if requested
-        if (favoritesOnly) {
-            filteredPets = filteredPets.filter(pet => window.favorites.includes(pet.id));
-        }
-        
-        // If no results after filtering
-        if (filteredPets.length === 0) {
-            displayNoResultsModal();
-            return;
-        }
-        
-        // Prioritize pets with photos even if not filtering exclusively for them
-        const petsWithPhotos = filteredPets.filter(pet => pet.photos && pet.photos.length > 0);
-        const petsWithoutPhotos = filteredPets.filter(pet => !pet.photos || pet.photos.length === 0);
-        
-        // Combine the arrays, with pets with photos first
-        const prioritizedPets = [...petsWithPhotos, ...petsWithoutPhotos];
-        
         updateLoadMoreButton();
 
         if (page === 1) {
-            displayResults(prioritizedPets);
+            displayResults(data.animals);
         } else {
-            appendResults(prioritizedPets);
+            appendResults(data.animals);
         }
     } catch (error) {
         console.error("Error in fetchPets:", error);
@@ -211,94 +172,83 @@ async function fetchPets(location, animalType, gender, distance, selectedAges, p
     }
 }
 
-function populatePetElement(petElement, pet) {
-    // Add pet ID as data attribute for favorite tracking
-    petElement.setAttribute('data-pet-id', pet.id);
+// Function to populate a pet element with data
+function populatePetElement(element, pet) {
+    // Set pet ID for reference
+    element.setAttribute('data-pet-id', pet.id);
     
-    // Create image container for overlay elements
-    const imageContainer = document.createElement('div');
-    imageContainer.className = 'pet-image-container';
+    // Create image container
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'pet-image-container';
     
-    // Create image element
-    const imgElement = document.createElement('img');
+    // Add image (or placeholder)
+    const img = document.createElement('img');
     
-    // Handle images, use placeholder if no photos
     if (pet.photos && pet.photos.length > 0) {
-        imgElement.src = pet.photos[0].medium || pet.photos[0].small || pet.photos[0].large;
-        imgElement.setAttribute('data-photos', JSON.stringify(pet.photos));
+        // Find the best available image size
+        const photo = pet.photos[0];
+        img.src = photo.medium || photo.small || photo.large || photo.full;
     } else {
-        imgElement.src = "images/placeholder-image-url.png";
+        img.src = 'images/placeholder-image-url.png';
+        img.classList.add('placeholder');
     }
-    imgElement.alt = pet.name;
-    imageContainer.appendChild(imgElement);
     
-    // Add name overlay on the image (bottom)
-    const nameOverlay = document.createElement('div');
-    nameOverlay.className = 'pet-name-overlay';
-    nameOverlay.textContent = pet.name;
-    imageContainer.appendChild(nameOverlay);
+    img.alt = pet.name;
+    imgContainer.appendChild(img);
     
-    // Add age overlay (top left)
+    // Add overlays
+    // Age overlay (top left)
     const ageOverlay = document.createElement('div');
     ageOverlay.className = 'pet-age-overlay';
     ageOverlay.textContent = pet.age;
-    imageContainer.appendChild(ageOverlay);
+    imgContainer.appendChild(ageOverlay);
     
-    // Add gender overlay (bottom right)
+    // Gender overlay (bottom right)
     const genderOverlay = document.createElement('div');
     genderOverlay.className = 'pet-gender-overlay';
     genderOverlay.textContent = pet.gender;
-    imageContainer.appendChild(genderOverlay);
+    imgContainer.appendChild(genderOverlay);
     
-    // Add heart favorite icon
-    const heartElement = document.createElement('div');
-    heartElement.className = 'pet-favorite';
-    const isFavorite = window.favorites.includes(pet.id);
-    heartElement.innerHTML = `<i class="fas fa-heart ${isFavorite ? 'active' : ''}"></i>`;
+    // Name overlay (bottom)
+    const nameOverlay = document.createElement('div');
+    nameOverlay.className = 'pet-name-overlay';
+    nameOverlay.textContent = pet.name;
+    imgContainer.appendChild(nameOverlay);
     
-    // Add click handler to toggle favorite status
-    heartElement.addEventListener('click', function(event) {
-        event.stopPropagation(); // Prevent opening the pet details modal
-        toggleFavorite(pet.id, this);
-    });
+    element.appendChild(imgContainer);
     
-    imageContainer.appendChild(heartElement);
+    // Additional info
+    const infoContainer = document.createElement('div');
+    infoContainer.className = 'pet-info';
     
-    // Add the image container to the pet element
-    petElement.appendChild(imageContainer);
-
-    // Create pet info container
-    const infoElement = document.createElement('div');
-    infoElement.className = 'pet-info';
-    
-    // Add pet breed
+    // Breed
     if (pet.breeds && pet.breeds.primary) {
-        const breedElement = document.createElement('p');
-        breedElement.className = 'pet-breed';
-        breedElement.textContent = pet.breeds.primary;
+        const breedInfo = document.createElement('p');
+        breedInfo.className = 'pet-breed';
+        breedInfo.textContent = pet.breeds.primary;
         if (pet.breeds.secondary) {
-            breedElement.textContent += ` / ${pet.breeds.secondary}`;
+            breedInfo.textContent += ` / ${pet.breeds.secondary}`;
         }
-        infoElement.appendChild(breedElement);
+        infoContainer.appendChild(breedInfo);
     }
     
-    // Add location if available
-    if (pet.contact && pet.contact.address && pet.contact.address.city && pet.contact.address.state) {
-        const locationElement = document.createElement('p');
-        locationElement.className = 'pet-location';
-        locationElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${pet.contact.address.city}, ${pet.contact.address.state}`;
-        infoElement.appendChild(locationElement);
+    // Location
+    if (pet.contact && pet.contact.address) {
+        const address = pet.contact.address;
+        if (address.city && address.state) {
+            const locationInfo = document.createElement('p');
+            locationInfo.className = 'pet-location';
+            locationInfo.textContent = `${address.city}, ${address.state}`;
+            infoContainer.appendChild(locationInfo);
+        }
     }
     
-    petElement.appendChild(infoElement);
+    element.appendChild(infoContainer);
     
-    // Make the entire pet card clickable to show pet details modal
-    petElement.addEventListener('click', function() {
+    // Make the whole pet card clickable to show details
+    element.addEventListener('click', function() {
         showPetDetailsModal(pet.id);
     });
-    
-    // Add hover state cursor
-    petElement.style.cursor = 'pointer';
 }
 
 // Global variable to store current gallery state
@@ -311,18 +261,10 @@ let galleryState = {
 function displayPetDetails(pet) {
     const container = document.getElementById('petDetailsContainer');
     
-    // Check if pet is favorited
-    const isFavorite = window.favorites.includes(pet.id);
-    
     // Build HTML for pet details
     let html = `
         <div class="pet-details-header" data-pet-id="${pet.id}">
-            <h2 class="pet-details-name">
-                ${pet.name}
-                <span class="pet-details-favorite" onclick="toggleFavorite('${pet.id}')">
-                    <i class="fas fa-heart ${isFavorite ? 'active' : ''}"></i>
-                </span>
-            </h2>
+            <h2 class="pet-details-name">${pet.name}</h2>
             <p class="pet-details-subtitle">
                 <span class="pet-details-age">${pet.age}</span>
                 <span class="pet-details-gender">${pet.gender}</span>
@@ -613,31 +555,6 @@ function cleanupGalleryEventHandlers() {
 function displayNoResultsModal() {
     const noResultsModal = document.getElementById('noResultsModal');
     if (noResultsModal) {
-        // Get current filter states
-        const favoritesOnly = document.getElementById('favoritesOnly').checked;
-        const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
-        
-        // Update tip visibility based on active filters
-        const favoritesTip = document.getElementById('favoritesNoResultsTip');
-        const photosTip = document.getElementById('withPhotosNoResultsTip');
-        
-        if (favoritesTip) {
-            favoritesTip.style.display = favoritesOnly ? 'block' : 'none';
-        }
-        
-        if (photosTip) {
-            photosTip.style.display = withPhotosOnly ? 'block' : 'none';
-        }
-        
-        // Update main message
-        if (favoritesOnly && window.favorites.length === 0) {
-            document.getElementById('noResultsMessage').textContent = 
-                "You don't have any favorited pets yet. Try favoriting some pets first or disable the favorites filter.";
-        } else {
-            document.getElementById('noResultsMessage').textContent = 
-                "No pets found with your search criteria. Please try a different search.";
-        }
-        
         // Show the modal
         noResultsModal.style.display = 'block';
         
@@ -756,77 +673,6 @@ async function fetchPetDetails(petId) {
     
     const data = await response.json();
     displayPetDetails(data.animal);
-}
-
-// Function to toggle pet as favorite
-function toggleFavorite(petId, heartElement) {
-    const index = window.favorites.indexOf(petId);
-    
-    if (index === -1) {
-        // Add to favorites
-        window.favorites.push(petId);
-    } else {
-        // Remove from favorites
-        window.favorites.splice(index, 1);
-    }
-    
-    // If heartElement is provided (from pet card), update the icon
-    if (heartElement) {
-        const heartIcon = heartElement.querySelector('i');
-        if (index === -1) {
-            heartIcon.classList.add('active');
-        } else {
-            heartIcon.classList.remove('active');
-        }
-    }
-    
-    // Update all instances of this pet's heart in the grid
-    updateFavoriteStatusInGrid(petId, index === -1);
-    
-    // Update the pet details modal heart if it's currently showing this pet
-    updatePetDetailsModalHeart(petId, index === -1);
-    
-    // Log current favorites (could be used for other features later)
-    console.log('Current favorites:', window.favorites);
-}
-
-// Update the heart in the pet details modal if it's showing
-function updatePetDetailsModalHeart(petId, isFavorite) {
-    const modal = document.getElementById('petDetailsModal');
-    if (modal.style.display === 'block') {
-        const detailsContainer = document.getElementById('petDetailsContainer');
-        const petIdElement = detailsContainer.querySelector('[data-pet-id]');
-        
-        if (petIdElement && petIdElement.getAttribute('data-pet-id') === petId) {
-            const heartIcon = detailsContainer.querySelector('.pet-details-favorite i');
-            if (heartIcon) {
-                if (isFavorite) {
-                    heartIcon.classList.add('active');
-                } else {
-                    heartIcon.classList.remove('active');
-                }
-            }
-        }
-    }
-}
-
-// Update all instances of a pet's favorite status in the results grid
-function updateFavoriteStatusInGrid(petId, isFavorite) {
-    // Find all pet cards in the grid
-    const petCards = document.querySelectorAll('.pet');
-    petCards.forEach(card => {
-        // Check if this card is for the pet we're updating
-        if (card.getAttribute('data-pet-id') === petId) {
-            const heartIcon = card.querySelector('.pet-favorite i');
-            if (heartIcon) {
-                if (isFavorite) {
-                    heartIcon.classList.add('active');
-                } else {
-                    heartIcon.classList.remove('active');
-                }
-            }
-        }
-    });
 }
 
 // Setup organization details modal
@@ -1015,193 +861,4 @@ function displayOrganizationDetails(org) {
     
     // Update the container with the organization details
     container.innerHTML = html;
-}
-
-// Set up favorites import/export functionality
-function setupFavoritesImportExport() {
-    // Export favorites button
-    const exportBtn = document.getElementById('exportFavorites');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', exportFavorites);
-    }
-    
-    // Import favorites input
-    const importInput = document.getElementById('importFavorites');
-    if (importInput) {
-        importInput.addEventListener('change', importFavorites);
-    }
-}
-
-// Export favorites to JSON file
-function exportFavorites() {
-    if (window.favorites.length === 0) {
-        alert('You have no favorites to export. Favorite some pets first!');
-        return;
-    }
-    
-    // Create the data to export
-    const exportData = {
-        favorites: window.favorites,
-        exportDate: new Date().toISOString(),
-        version: '1.0'
-    };
-    
-    // Convert to JSON
-    const jsonData = JSON.stringify(exportData, null, 2);
-    
-    // Create a blob
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    
-    // Create an object URL
-    const url = URL.createObjectURL(blob);
-    
-    // Create a download link and trigger it
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pspsps-favorites-${formatDate(new Date())}.json`;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    // Show success message
-    const count = window.favorites.length;
-    const message = `Successfully exported ${count} ${count === 1 ? 'favorite' : 'favorites'}.`;
-    showToast(message);
-}
-
-// Import favorites from JSON file
-function importFavorites(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            
-            // Validate the imported data
-            if (!data.favorites || !Array.isArray(data.favorites)) {
-                throw new Error('Invalid favorites file format');
-            }
-            
-            // Ask user if they want to replace or merge favorites
-            const existingCount = window.favorites.length;
-            const importCount = data.favorites.length;
-            
-            let action = 'merge';
-            if (existingCount > 0) {
-                action = confirm(
-                    `You currently have ${existingCount} favorites.\n\n` +
-                    `This file contains ${importCount} favorites.\n\n` +
-                    `Click OK to merge them with your current favorites.\n` +
-                    `Click Cancel to replace your current favorites.`
-                ) ? 'merge' : 'replace';
-            }
-            
-            // Process the favorites based on user choice
-            if (action === 'replace') {
-                window.favorites = [...data.favorites];
-            } else {
-                // Merge favorites (avoiding duplicates)
-                data.favorites.forEach(id => {
-                    if (!window.favorites.includes(id)) {
-                        window.favorites.push(id);
-                    }
-                });
-            }
-            
-            // Update the UI to reflect the new favorites
-            updateAllFavoritesInUI();
-            
-            // Show success message
-            const finalCount = window.favorites.length;
-            const message = `Successfully imported favorites. You now have ${finalCount} ${finalCount === 1 ? 'favorite' : 'favorites'}.`;
-            showToast(message);
-            
-            // If showing favorites only, refresh the search to show newly imported favorites
-            if (document.getElementById('favoritesOnly').checked) {
-                triggerSearch();
-            }
-        } catch (error) {
-            console.error('Import error:', error);
-            alert('Error importing favorites: ' + error.message);
-        }
-        
-        // Reset the file input
-        event.target.value = '';
-    };
-    
-    reader.onerror = function() {
-        alert('Error reading the file');
-        event.target.value = '';
-    };
-    
-    reader.readAsText(file);
-}
-
-// Helper function to format date for filename
-function formatDate(date) {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-}
-
-// Update all favorites in the UI
-function updateAllFavoritesInUI() {
-    // Update all pet cards in the results
-    const petCards = document.querySelectorAll('.pet');
-    petCards.forEach(card => {
-        const petId = card.getAttribute('data-pet-id');
-        const heartIcon = card.querySelector('.pet-favorite i');
-        if (heartIcon) {
-            if (window.favorites.includes(petId)) {
-                heartIcon.classList.add('active');
-            } else {
-                heartIcon.classList.remove('active');
-            }
-        }
-    });
-    
-    // Update pet details modal if open
-    const detailsModal = document.getElementById('petDetailsModal');
-    if (detailsModal && detailsModal.style.display === 'block') {
-        const container = document.getElementById('petDetailsContainer');
-        const petIdElement = container.querySelector('[data-pet-id]');
-        if (petIdElement) {
-            const petId = petIdElement.getAttribute('data-pet-id');
-            const heartIcon = container.querySelector('.pet-details-favorite i');
-            if (heartIcon) {
-                if (window.favorites.includes(petId)) {
-                    heartIcon.classList.add('active');
-                } else {
-                    heartIcon.classList.remove('active');
-                }
-            }
-        }
-    }
-}
-
-// Show a toast notification
-function showToast(message) {
-    // Create toast element if it doesn't exist
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        document.body.appendChild(toast);
-    }
-    
-    // Set message and show toast
-    toast.textContent = message;
-    toast.classList.add('show');
-    
-    // Hide toast after 3 seconds
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
 }

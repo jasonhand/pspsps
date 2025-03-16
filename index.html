@@ -16,8 +16,7 @@
         </div>
         <nav>
             <ul>
-                <li><a href="#" class="active"><i class="fas fa-search"></i> Find Pets</a></li>
-                <li><a href="#"><i class="fas fa-heart"></i> About</a></li>
+                <li><a href="https://github.com/jasonhand/pspsps" target="_blank"><i class="fab fa-github"></i> Code</a></li>
             </ul>
         </nav>
     </header>
@@ -25,7 +24,6 @@
     <div id="app">
         <!-- Search Form -->
         <form id="zipForm">
-            <h2 class="form-title">Find Your Perfect Pet Companion</h2>
             <div class="dropdown-container">
                 <div class="dropdown">    
                     <label for="location"><i class="fas fa-map-marker-alt"></i> Location:</label>
@@ -89,28 +87,6 @@
                 </div>
             </div>
             
-            <div class="filter-options">
-                <div class="filter-option">
-                    <input type="checkbox" id="favoritesOnly" name="favoritesOnly">
-                    <label for="favoritesOnly"><i class="fas fa-heart"></i> Show favorites only</label>
-                </div>
-                
-                <div class="filter-option">
-                    <input type="checkbox" id="withPhotosOnly" name="withPhotosOnly" checked>
-                    <label for="withPhotosOnly"><i class="fas fa-image"></i> Show animals with photos only</label>
-                </div>
-
-                <div class="favorites-actions">
-                    <button type="button" id="exportFavorites" class="action-button">
-                        <i class="fas fa-download"></i> Save Favorites
-                    </button>
-                    <label for="importFavorites" class="action-button import-label">
-                        <i class="fas fa-upload"></i> Import Favorites
-                    </label>
-                    <input type="file" id="importFavorites" accept=".json" style="display: none;">
-                </div>
-            </div>
-            
             <p class="search-hint">Enter a location and adjust filters to see results</p>
         </form>
 
@@ -146,14 +122,6 @@
                 <span class="close" onclick="closeNoResultsModal()">&times;</span>
                 <i class="fas fa-search" style="font-size: 3rem; color: #4e937a;"></i>
                 <p id="noResultsMessage">No results found. Please try a different search.</p>
-                <div id="favoritesNoResultsTip" style="display:none; margin-top: 15px;">
-                    <p><strong>Tip:</strong> You have the "Show favorites only" filter enabled. 
-                    Try disabling this filter or favorite some pets first.</p>
-                </div>
-                <div id="withPhotosNoResultsTip" style="display:none; margin-top: 15px;">
-                    <p><strong>Tip:</strong> You have the "Show animals with photos only" filter enabled. 
-                    Try disabling this filter to see more results.</p>
-                </div>
             </div>
         </div>
         
