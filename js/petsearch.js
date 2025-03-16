@@ -2,6 +2,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPagination = null;
     // Add favorites array to store favorited pet IDs
     window.favorites = [];
+    
+    // Initialize distance slider value display
+    const distanceSlider = document.getElementById('distance');
+    const distanceValue = document.getElementById('distanceValue');
+    
+    if (distanceSlider && distanceValue) {
+        // Initial value
+        distanceValue.textContent = distanceSlider.value;
+        
+        // Update value on slider change
+        distanceSlider.addEventListener('input', function() {
+            distanceValue.textContent = this.value;
+            triggerSearch();
+        });
+    }
+    
+    // Set up event listeners for all filter inputs to enable hot reload
+    setupHotReload();
 
     document.getElementById('zipForm').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -26,25 +44,93 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event handlers for the pet details modal
     setupPetDetailsModal();
     
+    // Set up event handlers for the organization details modal
+    setupOrganizationDetailsModal();
+    
     // Make functions available globally for inline onclick handlers
     window.showOrganizationDetails = showOrganizationDetails;
     window.closeNoResultsModal = closeNoResultsModal;
     window.toggleFavorite = toggleFavorite;
 });
 
+// Set up hot reload functionality
+function setupHotReload() {
+    // Debounce function to prevent too many API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+    
+    // Function to trigger search with debounce
+    const triggerSearch = debounce(function() {
+        // Don't trigger if the location is empty
+        if (!document.getElementById('location').value.trim()) {
+            return;
+        }
+        
+        currentPagination = null; // Reset pagination on new search
+        
+        // Show loading indicator
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('loadMore').style.display = 'none';
+        
+        loadPets();
+    }, 500); // 500ms debounce time
+    
+    // Expose function globally for other events to use
+    window.triggerSearch = triggerSearch;
+    
+    // Set up event listeners for all filter elements
+    
+    // Text input for location
+    document.getElementById('location').addEventListener('input', debounce(() => {
+        if (document.getElementById('location').value.trim().length >= 3) {
+            triggerSearch();
+        }
+    }, 800)); // Longer debounce for text input
+    
+    // Select dropdowns
+    document.getElementById('animalType').addEventListener('change', triggerSearch);
+    document.getElementById('gender').addEventListener('change', triggerSearch);
+    
+    // Age checkboxes
+    document.querySelectorAll('input[name="animalAge"]').forEach(checkbox => {
+        checkbox.addEventListener('change', triggerSearch);
+    });
+    
+    // Filter checkboxes
+    document.getElementById('favoritesOnly').addEventListener('change', triggerSearch);
+    document.getElementById('withPhotosOnly').addEventListener('change', triggerSearch);
+}
+
 async function loadPets(page = 1) {
     const location = document.getElementById('location').value;
+    
+    // Don't try to load pets if no location is provided
+    if (!location.trim()) {
+        document.getElementById('loading').style.display = 'none';
+        return;
+    }
+    
     const animalType = document.getElementById('animalType').value;
     const gender = document.getElementById('gender').value;
     const distance = document.getElementById('distance').value;
-    const animalAge = document.getElementById('animalAge').value;
+    
+    // Get selected age values from checkboxes
+    const ageCheckboxes = document.querySelectorAll('input[name="animalAge"]:checked');
+    const selectedAges = Array.from(ageCheckboxes).map(checkbox => checkbox.value);
+    
     const favoritesOnly = document.getElementById('favoritesOnly').checked;
     const withPhotosOnly = document.getElementById('withPhotosOnly').checked;
     
-    await fetchPets(location, animalType, gender, distance, animalAge, page, favoritesOnly, withPhotosOnly);
+    await fetchPets(location, animalType, gender, distance, selectedAges, page, favoritesOnly, withPhotosOnly);
 }
 
-async function fetchPets(location, animalType, gender, distance, animalAge, page, favoritesOnly, withPhotosOnly) {
+async function fetchPets(location, animalType, gender, distance, selectedAges, page, favoritesOnly, withPhotosOnly) {
     try {
         let url = `/.netlify/functions/petfinder-proxy/animals?location=${encodeURIComponent(location)}&limit=50`;
         if (animalType) {
@@ -56,8 +142,12 @@ async function fetchPets(location, animalType, gender, distance, animalAge, page
         if (distance) {
             url += `&distance=${encodeURIComponent(distance)}`;
         }
-        if (animalAge) {
-            url += `&age=${encodeURIComponent(animalAge)}`;
+        
+        // Add multiple age parameters if selected
+        if (selectedAges && selectedAges.length > 0) {
+            selectedAges.forEach(age => {
+                url += `&age=${encodeURIComponent(age)}`;
+            });
         }
 
         console.log('Fetching from URL:', url);
@@ -212,9 +302,6 @@ function populatePetElement(petElement, pet) {
 
 // Function to show pet images in a modal
 function showPetImagesModal(photos, event) {
-    // We'll no longer directly call this function from image click
-    // Instead, we'll use it from within the pet details modal
-    
     // Prevent default behavior if event is provided
     if (event) {
         event.preventDefault();
@@ -228,13 +315,20 @@ function showPetImagesModal(photos, event) {
     // Clear previous images and add new ones
     modalImages.innerHTML = '';
     photos.forEach(photo => {
+        // Create image container
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'modal-image-container';
+        
+        // Create image element
         const img = document.createElement('img');
         img.src = photo.medium || photo.small || photo.large;
         img.alt = "Pet photo";
         img.onclick = function() {
             window.open(photo.full, '_blank');
         };
-        modalImages.appendChild(img);
+        
+        imgContainer.appendChild(img);
+        modalImages.appendChild(imgContainer);
     });
 
     // Display the modal
@@ -402,13 +496,6 @@ async function fetchPetDetails(petId) {
     displayPetDetails(data.animal);
 }
 
-// Function to show organization details
-function showOrganizationDetails(orgId) {
-    // For now, just navigate to the organization details page
-    // In a future update, this could be changed to show organization details in a modal as well
-    window.location.href = `organization-details.html?orgId=${orgId}`;
-}
-
 // Display pet details in the modal
 function displayPetDetails(pet) {
     const container = document.getElementById('petDetailsContainer');
@@ -438,10 +525,18 @@ function displayPetDetails(pet) {
     // Add images
     if (pet.photos && pet.photos.length > 0) {
         pet.photos.forEach((photo, index) => {
-            html += `<img src="${photo.medium}" alt="${pet.name}" class="pet-full-image" data-index="${index}">`;
+            html += `
+                <div class="pet-image-container">
+                    <img src="${photo.medium}" alt="${pet.name}" class="pet-full-image" data-index="${index}">
+                </div>
+            `;
         });
     } else {
-        html += `<img src="images/placeholder-image-url.png" alt="${pet.name}">`;
+        html += `
+            <div class="pet-image-container">
+                <img src="images/placeholder-image-url.png" alt="${pet.name}">
+            </div>
+        `;
     }
     
     html += `</div>`;
@@ -660,4 +755,192 @@ function updateFavoriteStatusInGrid(petId, isFavorite) {
             }
         }
     });
+}
+
+// Setup organization details modal
+function setupOrganizationDetailsModal() {
+    const modal = document.getElementById('organizationDetailsModal');
+    const closeBtn = modal.querySelector('.close');
+    
+    // Close modal when close button is clicked
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Show organization details modal and fetch organization data
+async function showOrganizationDetails(orgId) {
+    const modal = document.getElementById('organizationDetailsModal');
+    const container = document.getElementById('organizationDetailsContainer');
+    
+    // Display loading indicator
+    container.innerHTML = '<div class="organization-details-loading loading"></div>';
+    modal.style.display = 'block';
+    
+    try {
+        await fetchOrganizationDetails(orgId);
+    } catch (error) {
+        container.innerHTML = `<div class="error-message">
+            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff8066;"></i>
+            <p>Error loading organization details: ${error.message}</p>
+        </div>`;
+    }
+}
+
+// Fetch organization details from API
+async function fetchOrganizationDetails(orgId) {
+    const response = await fetch(`/.netlify/functions/petfinder-proxy/organizations/${orgId}`);
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    displayOrganizationDetails(data.organization);
+}
+
+// Display organization details in the modal
+function displayOrganizationDetails(org) {
+    const container = document.getElementById('organizationDetailsContainer');
+    
+    // Build HTML for organization details
+    let html = `
+        <div class="organization-details-header">
+            <h2 class="organization-details-name">${org.name}</h2>
+            <p class="organization-details-subtitle">
+                ${org.address && org.address.city ? `${org.address.city}` : ''}
+                ${org.address && org.address.state ? `${org.address.city ? ', ' : ''}${org.address.state}` : ''}
+                ${org.address && org.address.postcode ? `${org.address.postcode}` : ''}
+            </p>
+        </div>
+    `;
+    
+    // Add mission statement if available
+    if (org.mission_statement) {
+        html += `
+            <div class="organization-details-section">
+                <h3><i class="fas fa-quote-left"></i> Mission</h3>
+                <p>${org.mission_statement}</p>
+            </div>
+        `;
+    }
+    
+    // Add adoption policy if available
+    if (org.adoption && org.adoption.policy) {
+        html += `
+            <div class="organization-details-section">
+                <h3><i class="fas fa-clipboard-list"></i> Adoption Policy</h3>
+                <p>${org.adoption.policy}</p>
+            </div>
+        `;
+    }
+    
+    // Add contact information if available
+    const hasContactInfo = org.email || org.phone || (org.address && Object.values(org.address).some(val => val));
+    
+    if (hasContactInfo) {
+        html += `<div class="organization-contact">`;
+        
+        if (org.email) {
+            html += `
+                <div class="organization-contact-item">
+                    <span class="organization-contact-label"><i class="fas fa-envelope"></i> Email</span>
+                    <span class="organization-contact-value">${org.email}</span>
+                </div>
+            `;
+        }
+        
+        if (org.phone) {
+            html += `
+                <div class="organization-contact-item">
+                    <span class="organization-contact-label"><i class="fas fa-phone"></i> Phone</span>
+                    <span class="organization-contact-value">${org.phone}</span>
+                </div>
+            `;
+        }
+        
+        if (org.address && Object.values(org.address).some(val => val)) {
+            html += `
+                <div class="organization-contact-item">
+                    <span class="organization-contact-label"><i class="fas fa-map-marker-alt"></i> Address</span>
+                    <span class="organization-contact-value">
+                        ${org.address.address1 ? org.address.address1 : ''}
+                        ${org.address.address2 ? `<br>${org.address.address2}` : ''}
+                        ${org.address.city || org.address.state ? '<br>' : ''}
+                        ${org.address.city ? org.address.city : ''}
+                        ${org.address.state ? `${org.address.city ? ', ' : ''}${org.address.state}` : ''}
+                        ${org.address.postcode ? ` ${org.address.postcode}` : ''}
+                    </span>
+                </div>
+            `;
+        }
+        
+        html += `</div>`;
+    }
+    
+    // Add hours of operation if available
+    if (org.hours && Object.values(org.hours).some(val => val)) {
+        html += `
+            <div class="organization-details-section">
+                <h3><i class="fas fa-clock"></i> Hours</h3>
+                <div class="organization-hours">
+        `;
+        
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        days.forEach(day => {
+            const lowerDay = day.toLowerCase();
+            if (org.hours[lowerDay]) {
+                html += `<div class="hours-row">
+                    <span class="hours-day">${day}</span>
+                    <span class="hours-time">${org.hours[lowerDay]}</span>
+                </div>`;
+            }
+        });
+        
+        html += `</div></div>`;
+    }
+    
+    // Add social media links if available
+    if (org.social_media && Object.values(org.social_media).some(val => val)) {
+        html += `<div class="organization-details-section">
+            <h3><i class="fas fa-share-alt"></i> Social Media</h3>
+            <div class="organization-social">`;
+            
+        if (org.social_media.facebook) {
+            html += `<a href="${org.social_media.facebook}" target="_blank" class="social-link"><i class="fab fa-facebook-square"></i> Facebook</a>`;
+        }
+        if (org.social_media.twitter) {
+            html += `<a href="${org.social_media.twitter}" target="_blank" class="social-link"><i class="fab fa-twitter-square"></i> Twitter</a>`;
+        }
+        if (org.social_media.youtube) {
+            html += `<a href="${org.social_media.youtube}" target="_blank" class="social-link"><i class="fab fa-youtube-square"></i> YouTube</a>`;
+        }
+        if (org.social_media.instagram) {
+            html += `<a href="${org.social_media.instagram}" target="_blank" class="social-link"><i class="fab fa-instagram-square"></i> Instagram</a>`;
+        }
+        if (org.social_media.pinterest) {
+            html += `<a href="${org.social_media.pinterest}" target="_blank" class="social-link"><i class="fab fa-pinterest-square"></i> Pinterest</a>`;
+        }
+            
+        html += `</div></div>`;
+    }
+    
+    // Add footer with links
+    html += `
+        <div class="organization-footer">
+            <a href="${org.url}" target="_blank"><i class="fas fa-external-link-alt"></i> View on Petfinder</a>
+            <button onclick="document.getElementById('organizationDetailsModal').style.display='none';" class="close-button"><i class="fas fa-times"></i> Close</button>
+        </div>
+    `;
+    
+    // Update the container with the organization details
+    container.innerHTML = html;
 }

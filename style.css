@@ -173,6 +173,14 @@ button:hover {
   margin-top: 10px;
 }
 
+.search-hint {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
 #loadMore {
   display: block;
   margin: 30px auto;
@@ -451,16 +459,22 @@ button:hover {
   margin-top: 20px;
 }
 
+.modal-image-container {
+  overflow: hidden;
+  border-radius: 5px;
+  height: 200px;
+}
+
 #modalImages img {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 5px;
-  transition: var(--transition);
+  transition: transform 0.3s ease;
 }
 
 #modalImages img:hover {
-  transform: scale(1.03);
+  animation: kenBurns 8s ease forwards;
+  will-change: transform;
 }
 
 /* Error and No Results Styles */
@@ -593,17 +607,28 @@ button:hover {
   margin-bottom: 25px;
 }
 
+.pet-details-images .pet-image-container {
+  overflow: hidden;
+  border-radius: 8px;
+  height: 200px;
+}
+
 .pet-details-images img {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
-  transition: var(--transition);
+  transition: transform 0.3s ease;
   cursor: pointer;
 }
 
 .pet-details-images img:hover {
-  transform: scale(1.03);
+  animation: kenBurns 8s ease forwards;
+  will-change: transform;
+  box-shadow: none; /* Remove shadow as it's now on the container */
+}
+
+/* Add box shadow to the container instead */
+.pet-details-images .pet-image-container:hover {
   box-shadow: var(--shadow);
 }
 
@@ -778,4 +803,280 @@ button:hover {
   .grid-container {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
+}
+
+/* Organization Details Modal Styles */
+.organization-details-content {
+  max-width: 850px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.organization-details-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.organization-details-name {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.organization-details-subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.organization-details-section {
+  margin-bottom: 25px;
+}
+
+.organization-details-section h3 {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.organization-details-section p {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.organization-contact {
+  background-color: var(--quaternary-color);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.organization-contact-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.organization-contact-label {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.organization-contact-value {
+  color: var(--text-color);
+}
+
+.organization-contact-item i {
+  margin-right: 8px;
+  color: var(--primary-color);
+}
+
+.organization-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.organization-footer a {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: var(--transition);
+}
+
+.organization-footer a:hover {
+  background-color: #3A93AC;
+  transform: translateY(-2px);
+}
+
+.organization-details-loading {
+  height: 200px;
+}
+
+/* Responsive adjustments for organization details */
+@media (max-width: 768px) {
+  .organization-details-content {
+    padding: 15px;
+  }
+  
+  .organization-contact {
+    grid-template-columns: 1fr;
+  }
+  
+  .organization-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .organization-footer a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.organization-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 15px;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+.social-link:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.social-link i {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  color: var(--primary-color);
+}
+
+.close-button {
+  background-color: #f5f5f5;
+  color: var(--text-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.close-button:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+.organization-hours {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.hours-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+
+.hours-day {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.hours-time {
+  color: #666;
+}
+
+/* Age Checkboxes Styling */
+.age-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.age-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.age-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+.age-checkbox label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Distance Slider Styling */
+.distance-slider-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.distance-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #ddd;
+  outline: none;
+  cursor: pointer;
+}
+
+.distance-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%; 
+  background: var(--primary-color);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.distance-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+}
+
+.distance-slider::-webkit-slider-thumb:hover {
+  background: #3A93AC;
+  transform: scale(1.1);
+}
+
+.distance-slider::-moz-range-thumb:hover {
+  background: #3A93AC;
+  transform: scale(1.1);
+}
+
+.distance-value-container {
+  margin-top: 8px;
+  text-align: center;
+  font-weight: 500;
+  color: var(--text-color);
 }

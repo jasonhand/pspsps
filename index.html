@@ -57,26 +57,35 @@
                 </div>  
 
                 <div class="dropdown">
-                    <label for="animalAge"><i class="fas fa-birthday-cake"></i> Age:</label>
-                    <select id="animalAge" name="animalAge">
-                        <option value="">Any</option>
-                        <option value="Baby">Baby</option>
-                        <option value="Young">Young</option>
-                        <option value="Adult">Adult</option>
-                        <option value="Senior">Senior</option>
-                    </select>
+                    <label><i class="fas fa-birthday-cake"></i> Age:</label>
+                    <div class="age-checkboxes">
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-baby" name="animalAge" value="Baby">
+                            <label for="age-baby">Baby</label>
+                        </div>
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-young" name="animalAge" value="Young">
+                            <label for="age-young">Young</label>
+                        </div>
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-adult" name="animalAge" value="Adult">
+                            <label for="age-adult">Adult</label>
+                        </div>
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-senior" name="animalAge" value="Senior">
+                            <label for="age-senior">Senior</label>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="dropdown">
-                    <label for="distance"><i class="fas fa-road"></i> Distance:</label>
-                    <select id="distance" name="distance">
-                        <option value="">Any</option>
-                        <option value="10">< 10 miles</option>
-                        <option value="25">< 25 miles</option>
-                        <option value="50">< 50 miles</option>
-                        <option value="100">< 100 miles</option>
-                        <option value="200">< 200 miles</option>
-                    </select>
+                    <label for="distance"><i class="fas fa-road"></i> Distance (miles):</label>
+                    <div class="distance-slider-container">
+                        <input type="range" id="distance" name="distance" min="10" max="500" value="50" step="10" class="distance-slider">
+                        <div class="distance-value-container">
+                            <span id="distanceValue">50</span> miles
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -92,7 +101,8 @@
                 </div>
             </div>
             
-            <button type="submit"><i class="fas fa-search"></i> Search Pets</button>
+            <button type="submit" id="searchButton"><i class="fas fa-search"></i> Start Search</button>
+            <p class="search-hint">Results update automatically as you change filters</p>
         </form>
 
         <!-- Loading Indicator -->
@@ -144,6 +154,16 @@
                 <span class="close">&times;</span>
                 <div id="petDetailsContainer">
                     <div class="pet-details-loading loading"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organization Details Modal -->
+        <div id="organizationDetailsModal" class="modal">
+            <div class="modal-content organization-details-content">
+                <span class="close">&times;</span>
+                <div id="organizationDetailsContainer">
+                    <div class="organization-details-loading loading"></div>
                 </div>
             </div>
         </div>
