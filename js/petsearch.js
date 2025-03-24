@@ -12,12 +12,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update value on slider change
         distanceSlider.addEventListener('input', function() {
             distanceValue.textContent = this.value;
-            triggerSearch();
+            // Removed automatic search trigger
         });
     }
     
-    // Set up event listeners for all filter inputs to enable hot reload
-    setupHotReload();
+    // Setup search button (if not already in the DOM)
+    const searchButton = document.getElementById('searchButton');
+    if (searchButton) {
+        searchButton.addEventListener('click', function() {
+            const locationInput = document.getElementById('location');
+            if (locationInput.value.trim()) {
+                triggerSearch();
+            }
+        });
+    }
+    
+    // Set up event listeners for all filter inputs (without auto search)
+    setupFormListeners();
 
     // Handle form submission (for when user presses Enter in location field)
     document.getElementById('zipForm').addEventListener('submit', function(event) {
@@ -48,8 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.closeNoResultsModal = closeNoResultsModal;
 });
 
-// Set up hot reload functionality
-function setupHotReload() {
+// Set up form listeners (removed hot reload functionality)
+function setupFormListeners() {
     // Debounce function to prevent too many API calls
     function debounce(func, wait) {
         let timeout;
@@ -78,24 +89,6 @@ function setupHotReload() {
     
     // Expose function globally for other events to use
     window.triggerSearch = triggerSearch;
-    
-    // Set up event listeners for all filter elements
-    
-    // Text input for location
-    document.getElementById('location').addEventListener('input', debounce(() => {
-        if (document.getElementById('location').value.trim().length >= 3) {
-            triggerSearch();
-        }
-    }, 800)); // Longer debounce for text input
-    
-    // Select dropdowns
-    document.getElementById('animalType').addEventListener('change', triggerSearch);
-    document.getElementById('gender').addEventListener('change', triggerSearch);
-    
-    // Age checkboxes
-    document.querySelectorAll('input[name="animalAge"]').forEach(checkbox => {
-        checkbox.addEventListener('change', triggerSearch);
-    });
 }
 
 async function loadPets(page = 1) {
