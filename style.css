@@ -409,7 +409,7 @@ button:hover {
 
 /* Modal Styles */
 .modal {
-  display: none !important; /* Force hidden state initially */
+  display: none; /* Force hidden state initially */
   position: fixed;
   z-index: 1000;
   left: 0;
@@ -1403,7 +1403,7 @@ button:hover {
 }
 
 .optional-filters-content {
-  display: none !important; /* Force hidden state initially */
+  display: none; /* Force hidden state initially */
   padding: 1rem;
   background-color: #f9f9f9;
   border-radius: 5px;
