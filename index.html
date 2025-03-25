@@ -80,14 +80,14 @@
             
             <!-- Search button moved below distance filter -->
             <div class="search-button-container">
-                <button type="button" id="searchButton" class="search-button"><i class="fas fa-search"></i> Search</button>
+                <button type="button" id="searchButton" class="search-button"><i class="fas fa-search"></i> Search</div>
             </div>
             
             <!-- Optional filters section (collapsible) -->
             <div class="optional-filters-container">
-                <button type="button" class="optional-filters-toggle" id="optionalFiltersToggle">
+                <div class="optional-filters-toggle" id="optionalFiltersToggle">
                     <i class="fas fa-sliders-h"></i> Advanced Filters <i class="fas fa-chevron-down toggle-icon"></i>
-                </button>
+                </div>
                 
                 <div class="optional-filters-content" id="optionalFiltersContent">
                     <div class="dropdown-container">
@@ -205,7 +205,7 @@
         <div id="results" class="grid-container"></div>
         
         <!-- Load More Button -->
-        <button id="loadMore" style="display:none;"><i class="fas fa-plus-circle"></i> Load More Pets</button>
+        <button id="loadMore" style="display:none;"><i class="fas fa-plus-circle"></i> Load More Pets</div>
         
         <!-- Pet Images Modal -->
         <div id="petImageModal" class="modal">
@@ -262,11 +262,11 @@
                         <img id="galleryCurrentImage" src="" alt="Pet photo">
                     </div>
                     <div class="image-gallery-controls">
-                        <button class="gallery-nav prev-button"><i class="fas fa-chevron-left"></i></button>
+                        <button class="gallery-nav prev-button"><i class="fas fa-chevron-left"></i></div>
                         <div class="gallery-counter">
                             <span id="galleryCurrentIndex">1</span> / <span id="galleryTotalImages">0</span>
                         </div>
-                        <button class="gallery-nav next-button"><i class="fas fa-chevron-right"></i></button>
+                        <button class="gallery-nav next-button"><i class="fas fa-chevron-right"></i></div>
                     </div>
                 </div>
             </div>
@@ -274,5 +274,30 @@
     </div>
     
     <script src="js/petsearch.js"></script>
+    <script>
+        // Direct initialization of optional filters toggle (as an additional safety measure)
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggle = document.getElementById("optionalFiltersToggle");
+            const content = document.getElementById("optionalFiltersContent");
+            
+            if (toggle && content) {
+                // Hide content initially
+                content.style.display = "none";
+                
+                // Set up click handler
+                toggle.addEventListener("click", function() {
+                    if (content.style.display === "none") {
+                        content.style.display = "block";
+                        toggle.classList.add("active");
+                        content.classList.add("active");
+                    } else {
+                        content.style.display = "none";
+                        toggle.classList.remove("active");
+                        content.classList.remove("active");
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
