@@ -62,6 +62,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Set up optional filters toggle 
+    const optionalFiltersToggle = document.getElementById("optionalFiltersToggle"); 
+    const optionalFiltersContent = document.getElementById("optionalFiltersContent"); 
+     
+    if (optionalFiltersToggle && optionalFiltersContent) { 
+        // Initialize in closed state 
+        optionalFiltersContent.style.display = "none"; 
+         
+        // Toggle optional filters section when clicked 
+        optionalFiltersToggle.addEventListener("click", function() { 
+            const isOpen = optionalFiltersToggle.classList.contains("active"); 
+             
+            if (isOpen) { 
+                // Close the filters section 
+                optionalFiltersToggle.classList.remove("active"); 
+                optionalFiltersContent.classList.remove("active"); 
+                optionalFiltersContent.style.display = "none"; 
+            } else { 
+                // Open the filters section 
+                optionalFiltersToggle.classList.add("active"); 
+                optionalFiltersContent.classList.add("active"); 
+                optionalFiltersContent.style.display = "block"; 
+            } 
+        }); 
+    } 
+
     // Set up event listeners for all filter inputs (without auto search)
     setupFormListeners();
 

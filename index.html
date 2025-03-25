@@ -45,6 +45,7 @@
     <div id="app">
         <!-- Search Form -->
         <form id="zipForm">
+            <!-- Primary filters -->
             <div class="dropdown-container">
                 <div class="dropdown">    
                     <label for="location"><i class="fas fa-map-marker-alt"></i> Location:</label>
@@ -66,37 +67,6 @@
                     </select>
                 </div>
 
-                <div class="dropdown">        
-                    <label for="gender"><i class="fas fa-venus-mars"></i> Gender:</label>
-                    <select id="gender" name="gender">
-                        <option value="">Any</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>  
-
-                <div class="dropdown">
-                    <label><i class="fas fa-birthday-cake"></i> Age:</label>
-                    <div class="age-checkboxes">
-                        <div class="age-checkbox">
-                            <input type="checkbox" id="age-baby" name="animalAge" value="Baby">
-                            <label for="age-baby">Baby</label>
-                        </div>
-                        <div class="age-checkbox">
-                            <input type="checkbox" id="age-young" name="animalAge" value="Young">
-                            <label for="age-young">Young</label>
-                        </div>
-                        <div class="age-checkbox">
-                            <input type="checkbox" id="age-adult" name="animalAge" value="Adult">
-                            <label for="age-adult">Adult</label>
-                        </div>
-                        <div class="age-checkbox">
-                            <input type="checkbox" id="age-senior" name="animalAge" value="Senior">
-                            <label for="age-senior">Senior</label>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="dropdown">
                     <label for="distance"><i class="fas fa-road"></i> Distance (miles):</label>
                     <div class="distance-slider-container">
@@ -106,81 +76,128 @@
                         </div>
                     </div>
                 </div>
-                <div class="dropdown">
-                    <label for="size"><i class="fas fa-ruler-vertical"></i> Size:</label>
-                    <select id="size" name="size">
-                        <option value="">Any</option>
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
-                        <option value="xlarge">Extra Large</option>
-                    </select>
-                </div>
+            </div>
+            
+            <!-- Search button moved below distance filter -->
+            <div class="search-button-container">
+                <button type="button" id="searchButton" class="search-button"><i class="fas fa-search"></i> Search</button>
+            </div>
+            
+            <!-- Optional filters section (collapsible) -->
+            <div class="optional-filters-container">
+                <button type="button" class="optional-filters-toggle" id="optionalFiltersToggle">
+                    <i class="fas fa-sliders-h"></i> Advanced Filters <i class="fas fa-chevron-down toggle-icon"></i>
+                </button>
+                
+                <div class="optional-filters-content" id="optionalFiltersContent">
+                    <div class="dropdown-container">
+                        <div class="dropdown">        
+                            <label for="gender"><i class="fas fa-venus-mars"></i> Gender:</label>
+                            <select id="gender" name="gender">
+                                <option value="">Any</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>  
 
-                <div class="dropdown">
-                    <label for="coat"><i class="fas fa-paw"></i> Coat:</label>
-                    <select id="coat" name="coat">
-                        <option value="">Any</option>
-                        <option value="short">Short</option>
-                        <option value="medium">Medium</option>
-                        <option value="long">Long</option>
-                        <option value="wire">Wire</option>
-                        <option value="hairless">Hairless</option>
-                        <option value="curly">Curly</option>
-                    </select>
-                </div>
+                        <div class="dropdown">
+                            <label><i class="fas fa-birthday-cake"></i> Age:</label>
+                            <div class="age-checkboxes">
+                                <div class="age-checkbox">
+                                    <input type="checkbox" id="age-baby" name="animalAge" value="Baby">
+                                    <label for="age-baby">Baby</label>
+                                </div>
+                                <div class="age-checkbox">
+                                    <input type="checkbox" id="age-young" name="animalAge" value="Young">
+                                    <label for="age-young">Young</label>
+                                </div>
+                                <div class="age-checkbox">
+                                    <input type="checkbox" id="age-adult" name="animalAge" value="Adult">
+                                    <label for="age-adult">Adult</label>
+                                </div>
+                                <div class="age-checkbox">
+                                    <input type="checkbox" id="age-senior" name="animalAge" value="Senior">
+                                    <label for="age-senior">Senior</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown">
+                            <label for="size"><i class="fas fa-ruler-vertical"></i> Size:</label>
+                            <select id="size" name="size">
+                                <option value="">Any</option>
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                                <option value="xlarge">Extra Large</option>
+                            </select>
+                        </div>
 
-                <div class="dropdown">
-                    <label for="status"><i class="fas fa-heart"></i> Status:</label>
-                    <select id="status" name="status">
-                        <option value="">Any</option>
-                        <option value="adoptable">Adoptable</option>
-                        <option value="adopted">Adopted</option>
-                    </select>
-                </div>
+                        <div class="dropdown">
+                            <label for="coat"><i class="fas fa-paw"></i> Coat:</label>
+                            <select id="coat" name="coat">
+                                <option value="">Any</option>
+                                <option value="short">Short</option>
+                                <option value="medium">Medium</option>
+                                <option value="long">Long</option>
+                                <option value="wire">Wire</option>
+                                <option value="hairless">Hairless</option>
+                                <option value="curly">Curly</option>
+                            </select>
+                        </div>
 
-                <div class="dropdown">
-                    <label><i class="fas fa-house-user"></i> Characteristics:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="good_with_children" name="good_with_children" value="true">
-                            <label for="good_with_children">Good with Children</label>
+                        <div class="dropdown">
+                            <label for="status"><i class="fas fa-heart"></i> Status:</label>
+                            <select id="status" name="status">
+                                <option value="">Any</option>
+                                <option value="adoptable">Adoptable</option>
+                                <option value="adopted">Adopted</option>
+                            </select>
                         </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="good_with_dogs" name="good_with_dogs" value="true">
-                            <label for="good_with_dogs">Good with Dogs</label>
+
+                        <div class="dropdown">
+                            <label><i class="fas fa-house-user"></i> Characteristics:</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="good_with_children" name="good_with_children" value="true">
+                                    <label for="good_with_children">Good with Children</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="good_with_dogs" name="good_with_dogs" value="true">
+                                    <label for="good_with_dogs">Good with Dogs</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="good_with_cats" name="good_with_cats" value="true">
+                                    <label for="good_with_cats">Good with Cats</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="house_trained" name="house_trained" value="true">
+                                    <label for="house_trained">House Trained</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="special_needs" name="special_needs" value="true">
+                                    <label for="special_needs">Special Needs</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="good_with_cats" name="good_with_cats" value="true">
-                            <label for="good_with_cats">Good with Cats</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="house_trained" name="house_trained" value="true">
-                            <label for="house_trained">House Trained</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="special_needs" name="special_needs" value="true">
-                            <label for="special_needs">Special Needs</label>
+
+                        <div class="dropdown">
+                            <label for="sort"><i class="fas fa-sort"></i> Sort By:</label>
+                            <select id="sort" name="sort">
+                                <option value="recent">Recent</option>
+                                <option value="-recent">Oldest</option>
+                                <option value="distance">Nearest</option>
+                                <option value="-distance">Furthest</option>
+                                <option value="random">Random</option>
+                            </select>
                         </div>
                     </div>
-                </div>
-
-                <div class="dropdown">
-                    <label for="sort"><i class="fas fa-sort"></i> Sort By:</label>
-                    <select id="sort" name="sort">
-                        <option value="recent">Recent</option>
-                        <option value="-recent">Oldest</option>
-                        <option value="distance">Nearest</option>
-                        <option value="-distance">Furthest</option>
-                        <option value="random">Random</option>
-                    </select>
                 </div>
             </div>
             
             <p class="search-hint">Enter a location and adjust filters to see results</p>
-            <div class="search-button-container">
-                <button type="button" id="searchButton" class="search-button"><i class="fas fa-search"></i> Search</button>
-            </div>
+        </form>
+        
         <!-- Loading Indicator -->
         <div id="loading" class="loading" style="display:none;"></div>
 
@@ -237,7 +254,7 @@
         </div>
 
         <!-- Image Gallery Modal -->
-        <div id="imageGalleryModal" class="modal">
+        <div id="imageGalleryModal" class="modal image-gallery-modal">
             <div class="modal-content image-gallery-content">
                 <span class="close">&times;</span>
                 <div class="image-gallery-container">
