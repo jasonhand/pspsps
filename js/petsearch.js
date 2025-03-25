@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Make functions available globally for inline onclick handlers
     window.showOrganizationDetails = showOrganizationDetails;
+    window.showPetDetailsModal = showPetDetailsModal;
     window.closeNoResultsModal = closeNoResultsModal;
 });
 
@@ -313,7 +314,7 @@ function populatePetElement(element, pet) {
     
     element.appendChild(infoContainer);
     
-    // Make the whole pet card clickable to show details
+    // Make the whole pet card clickable to show details
     element.addEventListener('click', function() {
         showPetDetailsModal(pet.id);
     });
@@ -705,10 +706,13 @@ function setupPetDetailsModal() {
     });
 }
 
-// Show pet details modal and fetch pet data
-async function showPetDetailsModal(petId) {
+// Show pet details modal and fetch pet data
+async function showPetDetailsModal(petId) {
+    console.log("showPetDetailsModal called with pet ID:", petId);
     const modal = document.getElementById('petDetailsModal');
     const container = document.getElementById('petDetailsContainer');
+
+    console.log("Setting pet details modal display to block");
     
     // Display loading indicator
     container.innerHTML = '<div class="pet-details-loading loading"></div>';
