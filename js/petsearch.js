@@ -469,13 +469,6 @@ function displayPetDetails(pet) {
     
     html += `</div>`; // End of attributes
     
-    // Add footer with links
-    html += `
-        <div class="pet-details-footer">
-            <a href="${pet.url}" target="_blank"><i class="fas fa-external-link-alt"></i> View on Petfinder</a>
-            <a href="javascript:void(0);" onclick="showOrganizationDetails('${pet.organization_id}')"><i class="fas fa-building"></i> View Organization</a>
-        </div>
-    `;
     
     // Update the container with the pet details
     container.innerHTML = html;

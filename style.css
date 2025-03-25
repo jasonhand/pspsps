@@ -1425,3 +1425,76 @@ button:hover {
     transform: translateY(0);
   }
 }
+
+/* Pet Details Top Action Buttons */
+.pet-details-top-actions {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.pet-action-btn {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: var(--transition);
+  gap: 5px;
+}
+
+.pet-action-btn:hover {
+  background-color: #3A93AC;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.pet-details-header {
+  position: relative;
+}
+
+/* Ensure organization header has proper position */
+.organization-details-header {
+  position: relative;
+}
+
+/* Fixed Close Button */
+.fixed-close-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.fixed-close-btn i {
+  font-size: 1.2rem;
+}
+
+.fixed-close-btn:hover {
+  background-color: #3A93AC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.fixed-close-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
