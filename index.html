@@ -32,7 +32,7 @@
     <!-- Header with Navigation -->
     <header>
         <div class="logo">
-            <span class="logo-emoji">🐈‍⬛</span>
+            <span class="logo-emoji">🐾</span>
             <h1>PsPsPs</h1>
         </div>
         <nav>
@@ -43,8 +43,15 @@
     </header>
 
     <div id="app">
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading" style="display:none;"></div>
+
+        <!-- Pet Results Grid -->
+        <div id="results" class="grid-container"></div>
+        
         <!-- Search Form -->
         <form id="zipForm">
+            <h2 class="search-heading">Search Filters</h2>
             <!-- Primary filters -->
             <div class="dropdown-container">
                 <div class="dropdown">    
@@ -65,6 +72,37 @@
                         <option value="small-furry">Small & Furry</option>
                         <option value="scales-fins-other">Scales, Fins & Others</option>
                     </select>
+                </div>
+
+                <div class="dropdown">        
+                    <label for="gender"><i class="fas fa-venus-mars"></i> Gender:</label>
+                    <select id="gender" name="gender">
+                        <option value="">Any</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>  
+
+                <div class="dropdown">
+                    <label><i class="fas fa-birthday-cake"></i> Age:</label>
+                    <div class="age-checkboxes">
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-baby" name="animalAge" value="Baby">
+                            <label for="age-baby">Baby</label>
+                        </div>
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-young" name="animalAge" value="Young">
+                            <label for="age-young">Young</label>
+                        </div>
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-adult" name="animalAge" value="Adult">
+                            <label for="age-adult">Adult</label>
+                        </div>
+                        <div class="age-checkbox">
+                            <input type="checkbox" id="age-senior" name="animalAge" value="Senior">
+                            <label for="age-senior">Senior</label>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="dropdown">
@@ -91,37 +129,6 @@
                 
                 <div class="optional-filters-content" id="optionalFiltersContent">
                     <div class="dropdown-container">
-                        <div class="dropdown">        
-                            <label for="gender"><i class="fas fa-venus-mars"></i> Gender:</label>
-                            <select id="gender" name="gender">
-                                <option value="">Any</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                        </div>  
-
-                        <div class="dropdown">
-                            <label><i class="fas fa-birthday-cake"></i> Age:</label>
-                            <div class="age-checkboxes">
-                                <div class="age-checkbox">
-                                    <input type="checkbox" id="age-baby" name="animalAge" value="Baby">
-                                    <label for="age-baby">Baby</label>
-                                </div>
-                                <div class="age-checkbox">
-                                    <input type="checkbox" id="age-young" name="animalAge" value="Young">
-                                    <label for="age-young">Young</label>
-                                </div>
-                                <div class="age-checkbox">
-                                    <input type="checkbox" id="age-adult" name="animalAge" value="Adult">
-                                    <label for="age-adult">Adult</label>
-                                </div>
-                                <div class="age-checkbox">
-                                    <input type="checkbox" id="age-senior" name="animalAge" value="Senior">
-                                    <label for="age-senior">Senior</label>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div class="dropdown">
                             <label for="size"><i class="fas fa-ruler-vertical"></i> Size:</label>
                             <select id="size" name="size">
@@ -196,15 +203,6 @@
             </div>
         </form>
         
-        <!-- Loading Indicator -->
-        <div id="loading" class="loading" style="display:none;"></div>
-
-        <!-- Pet Results Grid -->
-        <div id="results" class="grid-container"></div>
-        
-        <!-- Load More Button -->
-        <button id="loadMore" style="display:none;"><i class="fas fa-plus-circle"></i> Load More Pets</button>
-        
         <!-- Pet Images Modal -->
         <div id="petImageModal" class="modal">
             <div class="modal-content">
@@ -234,7 +232,7 @@
         <!-- Pet Details Modal -->
         <div id="petDetailsModal" class="modal">
             <div class="modal-content pet-details-content">
-                <span class="close">&times;</span>
+                <button class="fixed-close-btn"><i class="fas fa-paw"></i></button>
                 <div id="petDetailsContainer">
                     <div class="pet-details-loading loading"></div>
                 </div>
@@ -245,6 +243,7 @@
         <div id="organizationDetailsModal" class="modal">
             <div class="modal-content organization-details-content">
                 <span class="close">&times;</span>
+                <button class="fixed-close-btn"><i class="fas fa-paw"></i></button>
                 <div id="organizationDetailsContainer">
                     <div class="organization-details-loading loading"></div>
                 </div>

@@ -1,3 +1,97 @@
+// Cache utilities
+const PetsCache = {
+    // Cache expiration time (24 hours in milliseconds)
+    EXPIRY_TIME: 24 * 60 * 60 * 1000,
+    
+    // Get cached data by key
+    get: function(key) {
+        try {
+            const cachedData = localStorage.getItem(key);
+            if (!cachedData) return null;
+            
+            const { timestamp, data } = JSON.parse(cachedData);
+            
+            // Check if cache is expired
+            if (Date.now() - timestamp > this.EXPIRY_TIME) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Cache retrieval error:', error);
+            return null;
+        }
+    },
+    
+    // Save data to cache with key
+    set: function(key, data) {
+        try {
+            const cacheEntry = {
+                timestamp: Date.now(),
+                data: data
+            };
+            localStorage.setItem(key, JSON.stringify(cacheEntry));
+        } catch (error) {
+            console.error('Cache storage error:', error);
+            // Try to clear some space if quota exceeded
+            if (error.name === 'QuotaExceededError') {
+                this.clearOldEntries();
+            }
+        }
+    },
+    
+    // Generate cache key for search
+    generateSearchKey: function(params) {
+        return `pet_search_${JSON.stringify(params)}`;
+    },
+    
+    // Generate cache key for pet details
+    generatePetKey: function(petId) {
+        return `pet_details_${petId}`;
+    },
+    
+    // Generate cache key for organization details
+    generateOrgKey: function(orgId) {
+        return `org_details_${orgId}`;
+    },
+    
+    // Clear old entries when storage is full
+    clearOldEntries: function() {
+        try {
+            const keys = [];
+            // Get all cache keys
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('pet_') || key.startsWith('org_')) {
+                    keys.push(key);
+                }
+            }
+            
+            // Sort by timestamp and remove oldest 20%
+            const entries = keys.map(key => {
+                try {
+                    const value = localStorage.getItem(key);
+                    const { timestamp } = JSON.parse(value);
+                    return { key, timestamp };
+                } catch (e) {
+                    return { key, timestamp: Date.now() }; // Default to current time if can't parse
+                }
+            });
+            
+            entries.sort((a, b) => a.timestamp - b.timestamp);
+            
+            // Remove the oldest 20% of entries
+            const toRemove = Math.max(1, Math.floor(entries.length * 0.2));
+            for (let i = 0; i < toRemove; i++) {
+                localStorage.removeItem(entries[i].key);
+            }
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+        }
+    }
+};
+
 // Initialize Datadog RUM custom events
 function initDatadogRUMEvents() {
     if (!window.DD_RUM) return;
@@ -24,10 +118,7 @@ function initDatadogRUMEvents() {
             });
         }
         
-        // Track load more clicks
-        if (e.target.closest('#loadMore')) {
-            window.DD_RUM.addAction('load_more_pets', {});
-        }
+        // Load more functionality removed
     });
 }
 
@@ -115,19 +206,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.getElementById('loadMore').addEventListener('click', function() {
-        if (currentPagination && currentPagination.next) {
-            // Show loading when loading more
-            document.getElementById('loading').style.display = 'flex';
-            loadPets(currentPagination.next);
-        }
-    });
     
     // Set up event handlers for the pet details modal
     setupPetDetailsModal();
     
     // Set up event handlers for the organization details modal
     setupOrganizationDetailsModal();
+    
+    // Set up event handlers for the image gallery modal
+    setupImageGalleryModal();
     
     // Make functions available globally for inline onclick handlers
     window.showOrganizationDetails = showOrganizationDetails;
@@ -158,7 +245,7 @@ function setupFormListeners() {
         // Show loading indicator
         document.getElementById('loading').style.display = 'flex';
         document.getElementById('results').innerHTML = '';
-        document.getElementById('loadMore').style.display = 'none';
+        // Load more button removed
         
         loadPets();
     }, 500); // 500ms debounce time
@@ -189,6 +276,30 @@ async function loadPets(page = 1) {
 
 async function fetchPets(location, animalType, gender, distance, selectedAges, page) {
     try {
+        // Create search parameters object for cache key
+        const searchParams = { location, animalType, gender, distance, selectedAges, page };
+        const cacheKey = PetsCache.generateSearchKey(searchParams);
+        
+        // Check cache first
+        const cachedData = PetsCache.get(cacheKey);
+        if (cachedData) {
+            console.log('Using cached pet search results');
+            
+            // Process cached data
+            currentPagination = cachedData.pagination;
+            
+            if (page === 1) {
+                displayResults(cachedData.animals);
+            } else {
+                appendResults(cachedData.animals);
+            }
+            
+            // Hide loading indicator
+            document.getElementById('loading').style.display = 'none';
+            return;
+        }
+        
+        // Build URL with all parameters
         let url = `/.netlify/functions/petfinder-proxy/animals?location=${encodeURIComponent(location)}&limit=50`;
         if (animalType) {
             url += `&type=${encodeURIComponent(animalType)}`;
@@ -222,10 +333,13 @@ async function fetchPets(location, animalType, gender, distance, selectedAges, p
             displayNoResultsModal();
             return;
         }
+        
+        // Cache the results
+        PetsCache.set(cacheKey, data);
 
         currentPagination = data.pagination;
         
-        updateLoadMoreButton();
+        // Load more functionality removed
 
         if (page === 1) {
             displayResults(data.animals);
@@ -339,11 +453,6 @@ function displayPetDetails(pet) {
                 <span class="pet-details-gender">${pet.gender}</span>
                 <span class="pet-details-breed">${pet.breeds.primary}${pet.breeds.secondary ? ` / ${pet.breeds.secondary}` : ''}</span>
             </p>
-            <div class="pet-details-top-actions">
-                <a href="${pet.url}" target="_blank" class="pet-action-btn">
-                    <i class="fas fa-external-link-alt"></i> View on Petfinder
-                </a>
-            </div>
         </div>
         
         <div class="pet-details-images">
@@ -367,6 +476,15 @@ function displayPetDetails(pet) {
     }
     
     html += `</div>`;
+    
+    // Add View on Petfinder button below images
+    html += `
+        <div class="petfinder-link-container">
+            <a href="${pet.url}" target="_blank" class="petfinder-link">
+                <i class="fas fa-external-link-alt"></i> View on Petfinder
+            </a>
+        </div>
+    `;
     
     // Add description if available
     if (pet.description) {
@@ -655,14 +773,6 @@ function displayError(message) {
     }
 }
 
-function updateLoadMoreButton() {
-    const loadMoreButton = document.getElementById('loadMore');
-    if (currentPagination && currentPagination.next) {
-        loadMoreButton.style.display = 'block';
-    } else {
-        loadMoreButton.style.display = 'none';
-    }
-}
 
 function appendResults(pets) {
     const resultsContainer = document.getElementById('results');
@@ -688,24 +798,82 @@ function displayResults(pets) {
         return;
     }
     
+    // Initial instructions section has been removed
+    
+    // Show results
     appendResults(pets);
-    updateLoadMoreButton();
+    
+    // Make sure search form is visible
+    const searchForm = document.getElementById('zipForm');
+    if (searchForm) {
+        searchForm.style.display = 'block';
+    }
 }
 
 // Setup pet details modal
 function setupPetDetailsModal() {
     const modal = document.getElementById('petDetailsModal');
+    const fixedCloseBtn = modal.querySelector('.fixed-close-btn');
+    
+    // Close modal when fixed close button is clicked
+    if (fixedCloseBtn) {
+        fixedCloseBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Close modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Setup organization details modal
+function setupOrganizationDetailsModal() {
+    const modal = document.getElementById('organizationDetailsModal');
     const closeBtn = modal.querySelector('.close');
+    const fixedCloseBtn = modal.querySelector('.fixed-close-btn');
     
     // Close modal when close button is clicked
     closeBtn.addEventListener('click', function() {
         modal.style.display = 'none';
     });
     
+    // Close modal when fixed close button is clicked
+    if (fixedCloseBtn) {
+        fixedCloseBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+    
     // Close modal when clicking outside the content
     window.addEventListener('click', function(event) {
         if (event.target === modal) {
             modal.style.display = 'none';
+        }
+    });
+}
+
+// Setup image gallery modal
+function setupImageGalleryModal() {
+    const modal = document.getElementById('imageGalleryModal');
+    const closeBtn = modal.querySelector('.close');
+    
+    // Close modal when close button is clicked
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        cleanupGalleryEventHandlers();
+    });
+    
+    // We're not using the fixed close button for the image gallery
+    
+    // Close modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            cleanupGalleryEventHandlers();
         }
     });
 }
@@ -732,8 +900,19 @@ async function showPetDetailsModal(petId) {
     }
 }
 
-// Fetch pet details from API
+// Fetch pet details from API with caching
 async function fetchPetDetails(petId) {
+    // Check cache first
+    const cacheKey = PetsCache.generatePetKey(petId);
+    const cachedData = PetsCache.get(cacheKey);
+    
+    if (cachedData) {
+        console.log('Using cached pet details');
+        displayPetDetails(cachedData.animal);
+        return;
+    }
+    
+    // If not in cache, fetch from API
     const response = await fetch(`/.netlify/functions/petfinder-proxy/animals/${petId}`);
     
     if (!response.ok) {
@@ -741,25 +920,11 @@ async function fetchPetDetails(petId) {
     }
     
     const data = await response.json();
+    
+    // Cache the results
+    PetsCache.set(cacheKey, data);
+    
     displayPetDetails(data.animal);
-}
-
-// Setup organization details modal
-function setupOrganizationDetailsModal() {
-    const modal = document.getElementById('organizationDetailsModal');
-    const closeBtn = modal.querySelector('.close');
-    
-    // Close modal when close button is clicked
-    closeBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-    
-    // Close modal when clicking outside the content
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
 }
 
 // Show organization details modal and fetch organization data
@@ -781,8 +946,19 @@ async function showOrganizationDetails(orgId) {
     }
 }
 
-// Fetch organization details from API
+// Fetch organization details from API with caching
 async function fetchOrganizationDetails(orgId) {
+    // Check cache first
+    const cacheKey = PetsCache.generateOrgKey(orgId);
+    const cachedData = PetsCache.get(cacheKey);
+    
+    if (cachedData) {
+        console.log('Using cached organization details');
+        displayOrganizationDetails(cachedData.organization);
+        return;
+    }
+    
+    // If not in cache, fetch from API
     const response = await fetch(`/.netlify/functions/petfinder-proxy/organizations/${orgId}`);
     
     if (!response.ok) {
@@ -790,6 +966,10 @@ async function fetchOrganizationDetails(orgId) {
     }
     
     const data = await response.json();
+    
+    // Cache the results
+    PetsCache.set(cacheKey, data);
+    
     displayOrganizationDetails(data.organization);
 }
 
